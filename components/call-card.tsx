@@ -5,7 +5,6 @@ import { useCalls } from "@/lib/calls";
 import { summaryOf } from "@/lib/summary";
 import type { Issue } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict";
-import CallActions from "./call-actions";
 import ReviewPill from "./review-pill";
 
 const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max).replace(/\s+\S*$/, "")}…` : text);
@@ -38,8 +37,7 @@ export default function CallCard({ issue, verdict }: { issue: Issue; verdict: Ve
         </p>
       </div>
       {!decided && <p className="text-sm text-zk-text2">{message(issue, verdict)}</p>}
-      {!decided && <CallActions issue={issue} verdict={verdict} />}
-      <ReviewPill issue={issue} verdict={verdict} actions={false} />
+      <ReviewPill issue={issue} verdict={verdict} />
     </article>
   );
 }

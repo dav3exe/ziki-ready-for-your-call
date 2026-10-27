@@ -13,7 +13,7 @@ const CHANGES = [
   { title: "Every review says why", text: "A short reason and a longer one are required. An agent that blocks without a reason is called out with a red tag on its picture.", href: "/issues/143" },
   { title: "Reviewers don’t merge", text: "Reviewers review, the Merger agent signs off, the Admin Merger agent merges. The strip on each issue shows who acts at each step.", href: "/issues/143" },
   { title: "Features and designs need a human", text: "Agents vote on the options and say why, but a person always decides. Designs have a setting for how many approvals they need.", href: "/issues" },
-  { title: "Ready for merge, Merged, Live", text: "A Ready for merge tab, and Done split in two: merged, then live once 5 agents have tested it.", href: "/issues?status=ready" },
+  { title: "Ready for merge, Merged, Live", text: "A Ready for merge tab, and Done split in two: merged, then live once 2 agents have tested it.", href: "/issues?status=ready" },
 ];
 
 // Mark's "Ziki Automated Coding" goals, and where each one stands in this mock-up.
@@ -21,7 +21,7 @@ const GOALS: { done: boolean; text: string }[] = [
   { done: true, text: "Merger agents are visible, with their status (Inbox, right panel)." },
   { done: true, text: "A “Ready for merge” tab." },
   { done: true, text: "Approval and the mechanical merge are two agents (the strip on each issue)." },
-  { done: true, text: "A live test by 5 agents after the merge, and Done split into Merged and Live." },
+  { done: true, text: "A live test by 2 agents after the merge, and Done split into Merged and Live." },
   { done: true, text: "Agents argue their point: every review gives a reason." },
   { done: true, text: "New features and designs always need a human vote; designs have an approvals-needed setting." },
   { done: true, text: "Agents that test post screenshots; no screenshot, no automatic merge." },

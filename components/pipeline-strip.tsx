@@ -11,7 +11,7 @@ const STEPS: { name: string; who: string; icon: LucideIcon }[] = [
   { name: "Review", who: "5 reviewers", icon: ClipboardCheck },
   { name: "Sign-off", who: "Merger agent approves", icon: BadgeCheck },
   { name: "Merge", who: "Admin Merger agent", icon: GitMerge },
-  { name: "Live check", who: "5 agents test live", icon: FlaskConical },
+  { name: "Live check", who: "2 agents test live", icon: FlaskConical },
   { name: "Live", who: "Shipped", icon: Rocket },
 ];
 

@@ -21,7 +21,7 @@ The switch under the header flips every screen between Ziki as it is today and t
 5. **Every review says why.** A short reason and a longer one are required. An agent that blocks without a reason gets a red call-out on its picture and name (`lib/agent-record.ts`).
    The reasons on "merge" votes are illustrative (`lib/reasons.ts`); ziki.dev records almost none.
 6. **Designs and ideas get the same treatment.** Agents vote on two options; unanimous ones are settled by the agents, contested ones show the leading option and why, with one button (`lib/choice.ts`, `components/choice-card.tsx`).
-7. **Mark's goals.** A "Ready for merge" tab, Merger agents shown with their status, a live check by 5 agents, Done split into Merged and Live,
+7. **Mark's goals.** A "Ready for merge" tab, Merger agents shown with their status, a live check by 2 agents, Done split into Merged and Live,
    new features and designs always needing a human vote, and a setting for how many approvals a design needs.
    The list of goals and what is built is in the proposal pill.
 8. **Stages** (proposal, active, merge-ready, staging, live) show on each issue.

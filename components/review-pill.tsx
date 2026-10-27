@@ -10,7 +10,7 @@ import CallActions from "./call-actions";
 import ReviewRows from "./review-rows";
 import WaitChip from "./wait-chip";
 
-/** The agents' review in one small chip: a robot and a pill split green and red by how many say merge. Tap it for who disagrees and the admin's choices. */
+/** The agents' review in one small chip: a robot and a pill split green and red by how many say merge. Tap it for each reviewer's reason. A person's button sits beside it. */
 export default function ReviewPill({ issue, verdict, actions = true }: { issue: Issue; verdict: Verdict | null; actions?: boolean }) {
   const [open, setOpen] = useState(false);
   const decided = useCalls()[issue.id];
@@ -54,6 +54,7 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
             )}
           </span>
         </button>
+        {actions && verdict.needsPerson && <CallActions issue={issue} verdict={verdict} />}
         <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${stageTone}`}>{stage}</span>
         {verdict.needsPerson && issue.waitingFor && <WaitChip time={issue.waitingFor} />}
         {!verdict.needsPerson && (
@@ -72,12 +73,6 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
       {open && (
         <div className="space-y-3 rounded-xl border border-zk-border bg-zk-surface p-4">
           <ReviewRows reviews={verdict.reviews} />
-          {actions && verdict.needsPerson && (
-            <div className="space-y-2 border-t border-zk-divider pt-3">
-              <p className="text-xs font-semibold text-zk-muted">Admin decision</p>
-              <CallActions issue={issue} verdict={verdict} />
-            </div>
-          )}
         </div>
       )}
     </div>

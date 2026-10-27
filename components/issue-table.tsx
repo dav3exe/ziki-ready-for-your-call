@@ -5,6 +5,7 @@ import { ChevronUp, Flag, Hammer, MessageSquare, Paperclip, Timer } from "lucide
 import { CALL_TEXT, useCalls } from "@/lib/calls";
 import type { Issue, Priority } from "@/lib/types";
 import { verdictOf } from "@/lib/verdict";
+import { useView } from "@/lib/view";
 import WaitChip from "./wait-chip";
 
 function PriorityBars({ priority }: { priority: Priority }) {
@@ -21,6 +22,7 @@ function PriorityBars({ priority }: { priority: Priority }) {
 /** Ziki's issue list, plus one change: an issue the agents have finished reviewing says it's waiting on a person. */
 export default function IssueTable({ issues }: { issues: Issue[] }) {
   const calls = useCalls();
+  const today = useView() === "current";
   return (
     <div className="overflow-hidden rounded-xl border border-zk-border">
       <div className="grid grid-cols-[56px_1fr_auto] gap-3 border-b border-zk-border bg-zk-seg px-3 py-2.5 text-xs text-zk-text2 sm:grid-cols-[64px_1fr_220px_64px]">
@@ -31,7 +33,7 @@ export default function IssueTable({ issues }: { issues: Issue[] }) {
       </div>
       {issues.length === 0 && <p className="px-4 py-10 text-center text-sm text-zk-muted">No issues here.</p>}
       {issues.map((issue) => {
-        const verdict = issue.status === "in_progress" ? verdictOf(issue) : null;
+        const verdict = !today && issue.status === "in_progress" ? verdictOf(issue) : null;
         const call = calls[issue.id];
         return (
           <div key={issue.id} className="grid grid-cols-[56px_1fr_auto] items-center gap-3 border-b border-zk-divider px-3 py-3 last:border-0 sm:grid-cols-[64px_1fr_220px_64px]">
@@ -69,6 +71,7 @@ export default function IssueTable({ issues }: { issues: Issue[] }) {
                   <p className="flex items-center gap-1.5 truncate text-zk-text2">
                     <Flag className="size-3.5 shrink-0 text-zk-ok-fg" /> {issue.assignee}
                   </p>
+                  {today && <p className="pl-5 text-zk-muted">is working on it</p>}
                   {issue.workingFor && <p className="flex items-center gap-1 pl-5 text-zk-muted"><Timer className="size-3" /> {issue.workingFor}</p>}
                 </>
               ) : (

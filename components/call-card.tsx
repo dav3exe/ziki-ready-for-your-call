@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useCalls } from "@/lib/calls";
+import { summaryOf } from "@/lib/summary";
 import type { Issue } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict";
 import CallActions from "./call-actions";
 import ReviewPill from "./review-pill";
+
+const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max).replace(/\s+\S*$/, "")}…` : text);
 
 /** What the agents would tell a person, in one or two sentences. */
 function message(issue: Issue, verdict: Verdict): string {
@@ -13,26 +16,25 @@ function message(issue: Issue, verdict: Verdict): string {
   const who = verdict.dissent[0];
   if (verdict.recommend === "merge") {
     if (!who) return `All ${verdict.merge} agents say ship it, but ${issue.priority === "High" ? "it's high priority" : "nothing shows it working"}, so it needs a person.`;
-    return `${who.agent} isn't sure${who.reason ? `: “${who.reason.replace(/\.$/, "")}”` : " and gave no reason"}. The other ${verdict.merge} say ship it.`;
+    return `${who.agent} isn't sure${who.reason ? `: “${clip(who.reason.replace(/\.$/, ""), 140)}”` : " and gave no reason"}. The other ${verdict.merge} say ship it.`;
   }
   return `${verdict.merge} of ${total} agents say it's ready; ${verdict.notReady} found problems. Agents recommend sending it back with their notes.`;
 }
 
-/** A contested fix in the Inbox: what the agents think as a short message, the recommended action, and the review chip. */
+/** A contested fix in the Inbox: its title and one line on what it is, what the agents think, the recommended action, and the review chip. */
 export default function CallCard({ issue, verdict }: { issue: Issue; verdict: Verdict }) {
   const decided = useCalls()[issue.id];
   const shots = issue.screenshots ?? issue.attachments ?? 0;
   return (
     <article className="space-y-3 rounded-xl border border-zk-border bg-zk-surface p-4">
       <div className="min-w-0">
-        <Link href={`/issues/${issue.id}`} className="font-semibold text-zk-text hover:text-zk-accent">
+        <Link href={`/issues/${issue.id}`} className="block truncate font-semibold text-zk-text hover:text-zk-accent">
           <span className="text-zk-muted">#{issue.id}</span> {issue.title}
         </Link>
+        <p className="mt-0.5 truncate text-sm text-zk-text2">{summaryOf(issue)}</p>
         <p className="mt-1 text-xs text-zk-muted">
-          {issue.type} · {issue.platform && `${issue.platform} · `}by {issue.assignee}
-          {issue.pr && <> · PR {issue.pr}</>}
-          {" · "}
-          {shots > 0 ? `${shots} ${shots === 1 ? "screenshot" : "screenshots"}` : "No screenshots"}
+          {issue.type}
+          {issue.platform && ` · ${issue.platform}`} · {issue.assignee} · {shots > 0 ? `${shots} ${shots === 1 ? "screenshot" : "screenshots"}` : "No screenshots"}
         </p>
       </div>
       {!decided && <p className="text-sm text-zk-text2">{message(issue, verdict)}</p>}

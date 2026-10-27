@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist_Mono, Inter, Manrope } from "next/font/google";
 import AppHeader from "@/components/app-header";
 import BottomNav from "@/components/bottom-nav";
-import ProposalLink from "@/components/proposal-link";
+import ProposalPanel from "@/components/proposal-panel";
+import ViewBar from "@/components/view-bar";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -24,12 +25,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${inter.variable} ${manrope.variable} ${geistMono.variable} min-h-screen overflow-x-clip font-sans antialiased`}>
         <div className="flex min-h-screen flex-col">
           <AppHeader />
+          <ViewBar />
           <main className="mx-auto w-full max-w-6xl min-w-0 flex-1 px-2 pt-2.5 pb-28 sm:px-6 sm:py-8 sm:pb-28 lg:pb-8">
             {children}
           </main>
         </div>
         <BottomNav />
-        <ProposalLink />
+        <ProposalPanel />
       </body>
     </html>
   );

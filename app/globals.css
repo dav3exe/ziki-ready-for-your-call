@@ -86,3 +86,24 @@ body {
   background: var(--zk-bg);
   color: var(--zk-text);
 }
+
+/* The agent-decision strip on Ziki's issue page scrolls by itself, and stops when you point at it. */
+@keyframes zk-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.zk-marquee {
+  mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+}
+.zk-marquee-track {
+  animation: zk-marquee 70s linear infinite;
+}
+.zk-marquee:hover .zk-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zk-marquee-track {
+    animation: none;
+  }
+}

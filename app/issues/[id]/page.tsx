@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ChevronUp, ExternalLink } from "lucide-react";
+import ClassicIssue from "@/components/classic/classic-issue";
+import ViewSwitch from "@/components/view-switch";
 import ActivityList from "@/components/activity-list";
 import Avatar from "@/components/avatar";
 import Conversation from "@/components/conversation";
@@ -9,7 +11,7 @@ import DecisionList from "@/components/decision-list";
 import Fold from "@/components/fold";
 import ReviewPill from "@/components/review-pill";
 import { ALL_ISSUES, findIssue } from "@/lib/bulk";
-import { verdictOf } from "@/lib/verdict";
+import { proposedDecisions, verdictOf } from "@/lib/verdict";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -26,9 +28,10 @@ export default async function IssuePage({ params }: Props) {
   const issue = findIssue(Number((await params).id));
   if (!issue) notFound();
   const verdict = issue.status === "in_progress" ? verdictOf(issue) : null;
-  const count = (kind: string) => issue.decisions.filter((d) => d.kind === kind).length;
+  const decisions = proposedDecisions(issue);
+  const count = (kind: string) => decisions.filter((d) => d.kind === kind).length;
 
-  return (
+  const proposed = (
     <div className="mx-auto max-w-3xl space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 space-y-3">
@@ -74,13 +77,13 @@ export default async function IssuePage({ params }: Props) {
             ))}
           </div>
         </Fold>
-        {issue.decisions.length > 0 && (
+        {decisions.length > 0 && (
           <Fold
             title="Agent decisions"
-            count={issue.decisions.length}
+            count={decisions.length}
             preview={`${count("good_to_merge")} merge · ${count("not_ready")} not ready · ${count("confirmed")} confirmed`}
           >
-            <DecisionList decisions={issue.decisions} />
+            <DecisionList decisions={decisions} />
           </Fold>
         )}
         {issue.attachments ? (
@@ -99,4 +102,6 @@ export default async function IssuePage({ params }: Props) {
       </div>
     </div>
   );
+
+  return <ViewSwitch current={<ClassicIssue issue={issue} />} proposed={proposed} />;
 }

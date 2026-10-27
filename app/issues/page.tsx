@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import ClassicInbox from "@/components/classic/classic-inbox";
 import InboxView from "@/components/inbox-view";
 import IssueTable from "@/components/issue-table";
 import IssuesToolbar, { type ListView } from "@/components/issues-toolbar";
+import ViewSwitch from "@/components/view-switch";
 import { BY_VOTES, COUNTS, ISSUES } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Issues · Ziki" };
@@ -18,7 +20,7 @@ export default async function IssuesPage({ searchParams }: { searchParams: Promi
     <div className="mx-auto w-full max-w-6xl space-y-5 rounded-xl bg-zk-surface p-3 sm:p-5">
       <IssuesToolbar view={view} />
       {view === "inbox" ? (
-        <InboxView issues={ISSUES} />
+        <ViewSwitch current={<ClassicInbox />} proposed={<InboxView issues={ISSUES} />} />
       ) : (
         <>
           <p className="sr-only">{COUNTS[view]} {LABEL[view]} issues, sorted by top votes</p>

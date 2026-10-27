@@ -50,7 +50,7 @@ function Digest({ issues }: { issues: Issue[] }) {
       <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left">
         <span className="text-sm">
           <b className="text-zk-text">{issues.length} handled by agents.</b>{" "}
-          <span className="text-zk-text2">All agreed. Nothing needed from you.</span>
+          <span className="text-zk-text2">All agreed.{issues.some((i) => !choiceOf(i)) ? " The Merger agent takes the fixes from here." : ""} Nothing needed from you.</span>
         </span>
         <ChevronDown className={`size-4 shrink-0 text-zk-muted transition-transform ${open ? "rotate-180" : ""}`} />
       </button>

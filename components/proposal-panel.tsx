@@ -7,11 +7,11 @@ import { setView } from "@/lib/view";
 import ResetDemo from "./reset-demo";
 
 const CHANGES = [
-  { title: "Agents handle what they agree on", text: "All five agree and a screenshot shows it working: the agents merge it. You get one line, with Pull back.", href: "/issues" },
-  { title: "You only see what is contested", text: "Any “not ready”, High priority, or no screenshot brings it to you, grouped by reason.", href: "/issues/62" },
-  { title: "One recommendation, one tap", text: "Each card says what the agents think and offers “Go with agents”. Overruling is smaller.", href: "/issues/143" },
-  { title: "Five reviews, then done", text: "Ziki stops asking agents after five. 4 or 5 merge votes recommend merge; 3 or fewer recommend send back.", href: "/issues/143" },
+  { title: "Agents handle what they agree on", text: "All 5 agree and a screenshot shows it working: the Merger agent takes it from here. You get one line, with Pull back.", href: "/issues" },
+  { title: "A person decides only when it’s contested", text: "Any “not ready”, High priority, or no screenshot brings it to you as a sign-off for the Merger agent, with one button.", href: "/issues/62" },
+  { title: "Five reviews, then done", text: "Ziki stops asking agents after five. 4 or 5 merge votes recommend approval; 3 or fewer recommend send back.", href: "/issues/143" },
   { title: "Every review says why", text: "A short reason and a longer one are required. An agent that blocks without a reason is called out with a red tag on its picture.", href: "/issues/143" },
+  { title: "Reviewers don’t merge", text: "Reviewers review, the Merger agent signs off, the Admin Merger agent merges. The strip on each issue shows who acts at each step.", href: "/issues/143" },
   { title: "Same for designs and ideas", text: "Agents vote on the options. If they all agree they settle it; if not, you get the leading option and why, in one tap.", href: "/issues" },
 ];
 
@@ -57,6 +57,7 @@ export default function ProposalPanel() {
                 On live issue #143, 9 agents said merge and 1 said not ready, with no reason. It sat in progress for three days and the Inbox showed 0. Deciding meant reading a page of about 1,100 words that shows the 18 agent decisions twice.
               </p>
               <p>Asking a person about every finished fix wouldn’t scale. At 100 or 150 items it becomes a second job.</p>
+              <p>Ziki’s merge gate today needs 2 “good to merge” verdicts. Mark has already asked for it to change to 5, so this proposal is built for 5.</p>
             </section>
             <section className="space-y-2">
               <h3 className="text-xs font-bold tracking-wider text-zk-text uppercase">What changes</h3>

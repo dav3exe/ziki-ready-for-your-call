@@ -9,6 +9,7 @@ import Avatar from "@/components/avatar";
 import Conversation from "@/components/conversation";
 import DecisionList from "@/components/decision-list";
 import Fold from "@/components/fold";
+import PipelineStrip from "@/components/pipeline-strip";
 import ReviewPill from "@/components/review-pill";
 import { ALL_ISSUES, findIssue } from "@/lib/bulk";
 import { proposedDecisions, verdictOf } from "@/lib/verdict";
@@ -65,6 +66,7 @@ export default async function IssuePage({ params }: Props) {
       </div>
 
       <ReviewPill issue={issue} verdict={verdict} />
+      <PipelineStrip issue={issue} verdict={verdict} />
 
       <div className="rounded-xl border border-zk-border bg-zk-surface px-4">
         <Fold title="Description" preview={(issue.description.find((p) => /summary|what|happens|description/i.test(p.heading)) ?? issue.description[0]).body}>

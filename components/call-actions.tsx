@@ -8,7 +8,7 @@ import type { Verdict } from "@/lib/verdict";
 import NotePopover from "./note-popover";
 
 const DONE_TEXT: Record<CallKind, (issue: Issue, verdict: Verdict) => string> = {
-  merged: (i) => `${i.assignee ?? "The assignee"} and the reviewing agents were told, and the issue moves to Done.`,
+  merged: () => "The Merger agent picks it up, merges it, and the issue moves to Done.",
   sent_back: (i) => `${i.assignee ?? "The assignee"} gets the note. Agents won't review it again until a new push.`,
   chose: (i) => `${i.assignee ?? "The agents"} and the voting agents were told.`,
   asked: (_, v) => `${v.dissent[0]?.agent ?? "The agent"} was asked. The answer comes back to this card, and the issue stays here until you decide.`,
@@ -70,7 +70,7 @@ export default function CallActions({ issue, verdict }: { issue: Issue; verdict:
     <div className="relative">
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={go} className={`${BUTTON} bg-zk-blue text-white hover:brightness-110`}>
-          {merging ? <GitMerge className="size-4" /> : <Undo className="size-4" />} Go with agents: {merging ? "merge" : "send back"}
+          {merging ? <GitMerge className="size-4" /> : <Undo className="size-4" />} {merging ? "Approve for the Merger agent" : "Go with agents: send back"}
         </button>
         <button type="button" aria-expanded={overrule} onClick={() => setOverrule(!overrule)} className="cursor-pointer px-2 py-2 text-sm font-semibold text-zk-text2 hover:text-zk-text">
           Overrule
@@ -84,7 +84,7 @@ export default function CallActions({ issue, verdict }: { issue: Issue; verdict:
             </button>
           ) : (
             <button type="button" onClick={() => makeCall(issue.id, { kind: "merged" })} className={choice}>
-              <GitMerge className="size-4" /> Merge anyway
+              <GitMerge className="size-4" /> Approve anyway
             </button>
           )}
           {dissenter && (

@@ -58,7 +58,7 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
         {verdict.needsPerson && issue.waitingFor && <WaitChip time={issue.waitingFor} />}
         {!verdict.needsPerson && (
           <>
-            <span className="text-xs text-zk-text2">Agents handled this on their own.</span>
+            <span className="text-xs text-zk-text2">Handed to the Merger agent.</span>
             <button
               type="button"
               onClick={() => makeCall(issue.id, { kind: "sent_back", note: "Pulled back from automatic merge." })}

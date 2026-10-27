@@ -57,7 +57,7 @@ export function resetCalls() {
 }
 
 export const CALL_TEXT: Record<CallKind, string> = {
-  merged: "Merged",
+  merged: "Approved for merge",
   sent_back: "Sent back",
   asked: "Asked the agent",
   chose: "Chosen",

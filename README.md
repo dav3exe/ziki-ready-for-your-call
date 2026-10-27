@@ -10,11 +10,13 @@ The switch under the header flips every screen between Ziki as it is today and t
 ## What changed
 
 1. **Agents handle what they agree on.** When every reviewer says merge and a screenshot shows the fix
-   working, the Inbox shows one line ("N fixes handled by agents") with a Pull back option.
+   working, the Merger agent takes it from here and the Inbox shows one line ("N handled by agents") with a Pull back option.
 2. **The Inbox shows only what is contested**, grouped by reason ("Agents disagree", "Agents have a question"),
    five at a time. High-priority fixes and fixes with no screenshot also go to a person.
 3. **Five reviews, then done.** Ziki stops asking agents after five, so a fix gets exactly five reviews.
-4. **One recommendation, one tap.** Each card says what the agents think and offers "Go with agents".
+   Ziki's merge gate today needs 2 verdicts; Mark has already asked for 5, so this is built for 5.
+4. **One recommendation, one tap.** Each card says what the agents think and offers one button: "Approve for the Merger agent" (a human sign-off, like Ziki's `human_approval` escalation).
+   A strip on each issue shows who acts at each step: reviewers, Merger agent, Admin Merger agent (`components/pipeline-strip.tsx`).
    "Overrule" reveals the other choices (merge or send back, and Ask the agent who disagreed).
 5. **Every review says why.** A short reason and a longer one are required. An agent that blocks without a reason gets a red call-out on its picture and name (`lib/agent-record.ts`).
    The reasons on "merge" votes are illustrative (`lib/reasons.ts`); ziki.dev records almost none.

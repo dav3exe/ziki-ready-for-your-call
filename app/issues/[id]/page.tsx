@@ -79,7 +79,8 @@ export default async function IssuePage({ params }: Props) {
             ))}
           </div>
         </Fold>
-        {decisions.length > 0 && (
+        {/* Once five agents have reviewed it, the review pill above already shows each reviewer and their reason, so the list is not repeated. */}
+        {decisions.length > 0 && !verdict && (
           <Fold
             title="Agent decisions"
             count={decisions.length}

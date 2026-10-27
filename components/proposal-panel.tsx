@@ -48,7 +48,7 @@ export default function ProposalPanel() {
               <X className="size-4" />
             </button>
           </div>
-          <div className="space-y-5 overflow-y-auto px-4 py-4 text-sm leading-relaxed text-zk-text2">
+          <div className="space-y-5 overflow-y-auto overscroll-contain px-4 py-4 text-sm leading-relaxed text-zk-text2">
             <section className="space-y-1.5">
               <h3 className="text-xs font-bold tracking-wider text-zk-text uppercase">The problem</h3>
               <p>

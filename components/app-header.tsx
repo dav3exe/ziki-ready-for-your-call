@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Bell, Bot, ChevronDown, Trophy } from "lucide-react";
 import { ME, PROJECT } from "@/lib/data";
 import Avatar from "./avatar";
+import ThemeToggle from "./theme-toggle";
 import ZikiLogo from "./ziki-logo";
 import { SECTIONS } from "./sections";
 
@@ -36,6 +37,7 @@ export default function AppHeader() {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <ThemeToggle />
           <button type="button" className="hidden items-center gap-1.5 rounded-full border border-zk-border px-4 py-2 text-sm font-semibold sm:flex">
             <Bot className="size-4 text-zk-accent" /> Agents <ChevronDown className="size-4 text-zk-muted" />
           </button>

@@ -5,17 +5,27 @@ import { Check, GitMerge, MessageCircleQuestion, Undo2, Undo } from "lucide-reac
 import { CALL_TEXT, type CallKind, makeCall, undoCall, useCalls } from "@/lib/calls";
 import type { Issue } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict";
+import NotePopover from "./note-popover";
 
 const DONE_TEXT: Record<CallKind, (issue: Issue, verdict: Verdict) => string> = {
   merged: (i) => `${i.assignee ?? "The assignee"} and the reviewing agents were told, and the issue moves to Done.`,
-  sent_back: (i) => `${i.assignee ?? "The assignee"} gets your note. Agents won't review it again until a new push.`,
+  sent_back: (i) => `${i.assignee ?? "The assignee"} gets the note. Agents won't review it again until a new push.`,
   asked: (_, v) => `${v.dissent[0]?.agent ?? "The agent"} was asked. The answer comes back to this card, and the issue stays here until you decide.`,
 };
 
-/** A person's three choices once agents have reached a verdict: merge, send back, or ask the agent who disagreed. */
+const BUTTON = "flex cursor-pointer items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-sm font-semibold transition active:scale-[0.98]";
+
+/** What the agents would write to the assignee: their reasons, or a plain line if none gave one. */
+function agentNote(verdict: Verdict): string {
+  const reasons = verdict.dissent.filter((d) => d.reason).map((d) => `${d.agent}: ${d.reason}`);
+  return reasons.length ? reasons.join(" ") : "Agents found problems with this fix.";
+}
+
+/** The agents' recommendation as one button, with "Overrule" for the other choices. Send back and ask open a small pop-up for the note. */
 export default function CallActions({ issue, verdict }: { issue: Issue; verdict: Verdict }) {
   const call = useCalls()[issue.id];
   const [open, setOpen] = useState<"sent_back" | "asked" | null>(null);
+  const [overrule, setOverrule] = useState(false);
   const dissenter = verdict.dissent[0];
   const [note, setNote] = useState("");
 
@@ -27,7 +37,7 @@ export default function CallActions({ issue, verdict }: { issue: Issue; verdict:
           <b>{CALL_TEXT[call.kind]}.</b> {DONE_TEXT[call.kind](issue, verdict)}
           {call.note && <span className="mt-1 block text-zk-text2">“{call.note}”</span>}
         </span>
-        <button type="button" onClick={() => undoCall(issue.id)} className="flex items-center gap-1 text-xs font-semibold text-zk-text2 hover:text-zk-text">
+        <button type="button" onClick={() => undoCall(issue.id)} className="flex cursor-pointer items-center gap-1 text-xs font-semibold text-zk-text2 hover:text-zk-text">
           <Undo2 className="size-3.5" /> Undo
         </button>
       </div>
@@ -35,12 +45,13 @@ export default function CallActions({ issue, verdict }: { issue: Issue; verdict:
   }
 
   const start = (kind: "sent_back" | "asked") => {
+    if (open === kind) return setOpen(null);
     setOpen(kind);
     setNote(
       kind === "sent_back"
         ? (dissenter?.reason ?? "")
         : dissenter
-          ? `What would make this ready for you? You said: “${dissenter.reason ?? "not ready"}”`
+          ? `What would make this ready for you?${dissenter.reason ? ` You said: “${dissenter.reason}”` : ""}`
           : "",
     );
   };
@@ -51,56 +62,46 @@ export default function CallActions({ issue, verdict }: { issue: Issue; verdict:
     setOpen(null);
   };
 
+  const merging = verdict.recommend === "merge";
+  const go = () => makeCall(issue.id, merging ? { kind: "merged" } : { kind: "sent_back", note: agentNote(verdict) });
+  const choice = `${BUTTON} border border-zk-border text-zk-text hover:border-zk-muted`;
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => makeCall(issue.id, { kind: "merged" })}
-          className="flex items-center gap-1.5 rounded-[10px] bg-zk-blue px-3.5 py-2 text-sm font-semibold text-white hover:brightness-110"
-        >
-          <GitMerge className="size-4" /> Merge
+    <div className="relative">
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" onClick={go} className={`${BUTTON} bg-zk-blue text-white hover:brightness-110`}>
+          {merging ? <GitMerge className="size-4" /> : <Undo className="size-4" />} Go with agents: {merging ? "merge" : "send back"}
         </button>
-        <button
-          type="button"
-          onClick={() => start("sent_back")}
-          aria-pressed={open === "sent_back"}
-          className={`flex items-center gap-1.5 rounded-[10px] border px-3.5 py-2 text-sm font-semibold ${open === "sent_back" ? "border-zk-accent text-zk-accent" : "border-zk-border text-zk-text hover:border-zk-muted"}`}
-        >
-          <Undo className="size-4" /> Send back
+        <button type="button" aria-expanded={overrule} onClick={() => setOverrule(!overrule)} className="cursor-pointer px-2 py-2 text-sm font-semibold text-zk-text2 hover:text-zk-text">
+          Overrule
         </button>
-        {dissenter && (
-          <button
-            type="button"
-            onClick={() => start("asked")}
-            aria-pressed={open === "asked"}
-            className={`flex items-center gap-1.5 rounded-[10px] border px-3.5 py-2 text-sm font-semibold ${open === "asked" ? "border-zk-accent text-zk-accent" : "border-zk-border text-zk-text hover:border-zk-muted"}`}
-          >
-            <MessageCircleQuestion className="size-4" /> Ask {dissenter.agent}
-          </button>
-        )}
       </div>
-      {open && (
-        <div className="space-y-2 rounded-lg border border-zk-border bg-zk-seg p-3">
-          <label htmlFor={`note-${issue.id}`} className="text-xs font-semibold text-zk-text2">
-            {open === "sent_back" ? `Tell ${issue.assignee ?? "the assignee"} what to fix` : `Your question for ${dissenter?.agent}`}
-          </label>
-          <textarea
-            id={`note-${issue.id}`}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={2}
-            className="w-full resize-y rounded-lg border border-zk-border bg-zk-surface px-3 py-2 text-sm text-zk-text outline-none focus:border-zk-accent"
-          />
-          <div className="flex gap-2">
-            <button type="button" onClick={submit} disabled={!note.trim()} className="rounded-[10px] bg-zk-blue px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">
-              {open === "sent_back" ? "Send back" : "Send question"}
+      {overrule && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {merging ? (
+            <button type="button" data-note-trigger onClick={() => start("sent_back")} aria-expanded={open === "sent_back"} className={choice}>
+              <Undo className="size-4" /> Send back
             </button>
-            <button type="button" onClick={() => setOpen(null)} className="px-2 text-sm text-zk-text2 hover:text-zk-text">
-              Cancel
+          ) : (
+            <button type="button" onClick={() => makeCall(issue.id, { kind: "merged" })} className={choice}>
+              <GitMerge className="size-4" /> Merge anyway
             </button>
-          </div>
+          )}
+          {dissenter && (
+            <button type="button" data-note-trigger onClick={() => start("asked")} aria-expanded={open === "asked"} className={choice}>
+              <MessageCircleQuestion className="size-4" /> Ask {dissenter.agent}
+            </button>
+          )}
         </div>
+      )}
+      {open && (
+        <NotePopover
+          title={open === "sent_back" ? `Tell ${issue.assignee ?? "the assignee"} what to fix` : `Your question for ${dissenter?.agent}`}
+          value={note}
+          onChange={setNote}
+          submitLabel={open === "sent_back" ? "Send back" : "Send question"}
+          onSubmit={submit}
+          onClose={() => setOpen(null)}
+        />
       )}
     </div>
   );

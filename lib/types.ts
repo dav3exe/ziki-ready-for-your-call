@@ -24,8 +24,11 @@ export type Comment = {
   body: string;
 };
 
-/** Where an issue waits in the Inbox. "call" is the new tab this proposal adds. */
-export type InboxTab = "call" | "input" | "design" | "idea";
+/** One line of an issue's read-only history: who did what, and when. */
+export type Activity = { at: string; who: string; text: string };
+
+/** Where an issue waits in the Inbox. */
+export type InboxTab = "input" | "design" | "idea";
 
 export type Issue = {
   id: number;
@@ -36,6 +39,8 @@ export type Issue = {
   upvoted?: boolean;
   comments: number;
   attachments?: number;
+  /** Screenshots or recordings that show the fix working. Without any, agents never merge a fix on their own. */
+  screenshots?: number;
   status: Status;
   priority: Priority;
   reporter: string;
@@ -48,8 +53,9 @@ export type Issue = {
   pr?: string;
   decisions: Decision[];
   conversation: Comment[];
+  activity?: Activity[];
   /** Existing Inbox tabs (questions, design feedback, ideas). */
-  inbox?: Exclude<InboxTab, "call">;
+  inbox?: InboxTab;
   question?: string;
   /** How long the issue has waited on a person since the agents reached a verdict. */
   waitingFor?: string;

@@ -5,7 +5,7 @@ import { ChevronUp, Flag, Hammer, MessageSquare, Paperclip, Timer } from "lucide
 import { CALL_TEXT, useCalls } from "@/lib/calls";
 import type { Issue, Priority } from "@/lib/types";
 import { verdictOf } from "@/lib/verdict";
-import NewTag from "./new-tag";
+import WaitChip from "./wait-chip";
 
 function PriorityBars({ priority }: { priority: Priority }) {
   const on = { Low: 1, Medium: 2, High: 3 }[priority];
@@ -57,13 +57,13 @@ export default function IssueTable({ issues }: { issues: Issue[] }) {
               </p>
               {verdict && (
                 <p className="mt-1.5 sm:hidden">
-                  <WaitingChip waitingFor={issue.waitingFor} done={call && CALL_TEXT[call.kind]} />
+                  <WaitingChip waitingFor={issue.waitingFor} done={call && CALL_TEXT[call.kind]} auto={!verdict.needsPerson} />
                 </p>
               )}
             </div>
             <div className="hidden min-w-0 space-y-1 text-xs sm:block">
               {verdict ? (
-                <WaitingChip waitingFor={issue.waitingFor} done={call && CALL_TEXT[call.kind]} />
+                <WaitingChip waitingFor={issue.waitingFor} done={call && CALL_TEXT[call.kind]} auto={!verdict.needsPerson} />
               ) : issue.assignee ? (
                 <>
                   <p className="flex items-center gap-1.5 truncate text-zk-text2">
@@ -83,17 +83,11 @@ export default function IssueTable({ issues }: { issues: Issue[] }) {
   );
 }
 
-/** "Waiting on a person" once agents have a verdict, or what the person decided. */
-function WaitingChip({ waitingFor, done }: { waitingFor?: string; done?: string }) {
+/** A clock and the wait once agents have a verdict, or what the person decided. */
+function WaitingChip({ waitingFor, done, auto }: { waitingFor?: string; done?: string; auto?: boolean }) {
+  if (auto && !done) return <span className="inline-flex items-center rounded-full bg-zk-chip px-2 py-0.5 font-semibold text-zk-text2">Handled by agents</span>;
   if (done) {
     return <span className="inline-flex items-center gap-1 rounded-full bg-zk-ok-bg px-2 py-0.5 font-semibold text-zk-ok-fg">{done} by you</span>;
   }
-  return (
-    <span className="inline-flex flex-wrap items-center gap-1.5">
-      <span className="inline-flex items-center gap-1 rounded-full border border-zk-warn-bd bg-zk-warn-bg px-2 py-0.5 font-semibold text-zk-warn-fg">
-        Waiting on a person{waitingFor && ` · ${waitingFor}`}
-      </span>
-      <NewTag />
-    </span>
-  );
+  return waitingFor ? <WaitChip time={waitingFor} /> : null;
 }

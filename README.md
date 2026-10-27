@@ -1,21 +1,26 @@
-# Ziki: Ready for your call
+# Ziki: Agents first
 
 A front-end mock-up of [Ziki](https://ziki.dev) with one change to how people and agents work together.
-Agents do the work and the reviewing; once enough of them have reviewed a fix, Ziki asks a person to make the
-final call, once and clearly, instead of letting the fix sit "in progress" while more agents pile on.
+Agents handle the fixes they agree on. A person sees only what is contested, with the agents' recommendation
+and one button, instead of a finished fix sitting "in progress" for days.
 
 The one-page write-up is in the app at [`/proposal`](app/proposal/page.tsx).
 
-## What changed (marked NEW in the mock-up)
+## What changed
 
-1. **Inbox: "Ready for your call" tab.** Each card shows the agents' verdict (how many say merge, how many
-   don't, what the ones who disagree said) with three choices: Merge, Send back, Ask the agent who disagreed.
-2. **Verdict bar on the issue page**, above the description. The agent decision list folds away.
-3. **"Waiting on a person"** in the issue list, with how long.
-4. **Reviews close at the verdict**: after 5 reviews Ziki stops asking agents and asks a person.
+1. **Agents handle what they agree on.** When every reviewer says merge and a screenshot shows the fix
+   working, the Inbox shows one line ("N fixes handled by agents") with a Pull back option.
+2. **The Inbox shows only what is contested**, grouped by reason ("Agents disagree", "Agents have a question"),
+   five at a time. High-priority fixes and fixes with no screenshot also go to a person.
+3. **One recommendation, one tap.** Each card says what the agents think and offers "Go with agents".
+   "Overrule" reveals the other choices (merge or send back, and Ask the agent who disagreed).
+4. **A "not ready" needs a reason.** A reviewer who gives none is flagged on the card.
+5. **Stages** (proposal, active, merge-ready, staging, live) show on each issue.
+6. **150 demo issues**: "Load 150 demo issues" in the Inbox shows the layout at Mark's 100 to 200 item size.
 
-Everything else copies Ziki as it is today. There is no backend: the data is made up (`lib/data.ts`), and the
-calls you make are kept in your browser only (`lib/calls.ts`). "Reset the demo" on `/proposal` clears them.
+Issue #143 is a copy of the live one on ziki.dev. Everything else is made up. There is no backend: data is in
+`lib/data.ts` and `lib/bulk.ts`, and your choices are kept in your browser only (`lib/calls.ts`).
+"Reset the demo" on `/proposal` clears them.
 
 ## Structure
 
@@ -23,14 +28,16 @@ calls you make are kept in your browser only (`lib/calls.ts`). "Reset the demo" 
 app/
   layout.tsx            header, bottom bar, fonts
   issues/page.tsx       Inbox and the status lists (?status=open|in_progress|resolved|all)
-  issues/[id]/page.tsx  an issue, with the verdict bar
+  issues/[id]/page.tsx  an issue, with the review pill
   issues/new/page.tsx   Report an issue
   dashboard/  marketing/  security/  proposal/
-components/             header, nav, issue table, inbox, call card, verdict bar, decision strip, form
+components/             header, nav, issue table, inbox, call card, call actions, review pill
 lib/
-  data.ts               the fake issues, agents and decisions
-  verdict.ts            turns agent decisions into a verdict (QUORUM = 5)
+  data.ts               the hand-made issues, agents and decisions
+  bulk.ts               the 150 demo issues
+  verdict.ts            turns agent decisions into a verdict and decides who handles it (QUORUM = 5)
   calls.ts              the person's calls, kept in localStorage
+  demo-load.ts          the "Load 150 demo issues" switch
   types.ts
 ```
 

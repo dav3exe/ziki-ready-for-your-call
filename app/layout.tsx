@@ -10,13 +10,17 @@ const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Ziki · Ready for your call (mock-up)",
+  title: "Ziki · Agents first (mock-up)",
   description: "A mock-up of Ziki where agent verdicts become one clear decision for a person.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Applies a saved light choice before the first paint, so the page never flashes dark. */}
+        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem("ziki-mock-theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}` }} />
+      </head>
       <body className={`${inter.variable} ${manrope.variable} ${geistMono.variable} min-h-screen overflow-x-clip font-sans antialiased`}>
         <div className="flex min-h-screen flex-col">
           <AppHeader />

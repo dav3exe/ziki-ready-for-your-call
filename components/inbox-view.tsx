@@ -1,37 +1,101 @@
 "use client";
 
 import Link from "next/link";
-import { Bot, Inbox, Settings } from "lucide-react";
+import { Bot, ChevronDown, Inbox, Settings } from "lucide-react";
 import { useState } from "react";
+import { BULK } from "@/lib/bulk";
 import { useCalls } from "@/lib/calls";
 import { MY_AGENT } from "@/lib/data";
+import { setDemoLoad, useDemoLoad } from "@/lib/demo-load";
 import type { InboxTab, Issue } from "@/lib/types";
-import { QUORUM, verdictOf } from "@/lib/verdict";
+import { verdictOf } from "@/lib/verdict";
 import CallCard from "./call-card";
-import NewTag from "./new-tag";
+import ReviewPill from "./review-pill";
 
-const TABS: { tab: InboxTab; label: string; empty: string; isNew?: boolean }[] = [
-  { tab: "call", label: "Ready for your call", empty: "No fix is waiting on your decision.", isNew: true },
-  { tab: "input", label: "Need your input", empty: "No agent is waiting on an answer." },
+const TABS: { tab: InboxTab; label: string; empty: string }[] = [
+  { tab: "input", label: "Need your input", empty: "Nothing needs you. Agents are handling the rest." },
   { tab: "design", label: "Design feedback needed", empty: "No design is waiting on feedback." },
   { tab: "idea", label: "New ideas", empty: "No new ideas right now." },
 ];
 
-/** Ziki's Inbox. The proposal adds the first tab: fixes the agents have finished reviewing, waiting on a person to decide. */
+const FIRST = 5;
+
+/** A titled group that shows its first few items and the rest on request, so 100 items stay scannable. */
+function Group({ title, count, children }: { title: string; count: number; children: React.ReactNode[] }) {
+  const [all, setAll] = useState(false);
+  if (count === 0) return null;
+  return (
+    <section className="space-y-3">
+      <h2 className="text-xs font-bold tracking-wider text-zk-text2 uppercase">
+        {title} <span className="ml-1 rounded-md bg-zk-chip px-1.5 font-mono text-zk-text2">{count}</span>
+      </h2>
+      {all ? children : children.slice(0, FIRST)}
+      {children.length > FIRST && (
+        <button type="button" onClick={() => setAll(!all)} className="cursor-pointer text-sm font-semibold text-zk-accent">
+          {all ? "Show fewer" : `Show ${children.length - FIRST} more`}
+        </button>
+      )}
+    </section>
+  );
+}
+
+/** Fixes the agents agreed on and merged without a person: one line, with the list a click away. */
+function Digest({ issues }: { issues: Issue[] }) {
+  const [open, setOpen] = useState(false);
+  if (issues.length === 0) return null;
+  return (
+    <section className="rounded-xl border border-zk-border bg-zk-surface">
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left">
+        <span className="text-sm">
+          <b className="text-zk-text">{issues.length} {issues.length === 1 ? "fix" : "fixes"} handled by agents.</b>{" "}
+          <span className="text-zk-text2">All agreed and showed it working. Nothing needed from you.</span>
+        </span>
+        <ChevronDown className={`size-4 shrink-0 text-zk-muted transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <ul className="max-h-80 divide-y divide-zk-divider overflow-y-auto border-t border-zk-divider">
+          {issues.map((i) => (
+            <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
+              <Link href={`/issues/${i.id}`} className="min-w-0 truncate text-zk-text hover:text-zk-accent">
+                <span className="text-zk-muted">#{i.id}</span> {i.title}
+              </Link>
+              <ReviewPill issue={i} verdict={verdictOf(i)} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** Ziki's Inbox. Agents handle the fixes they agree on; "Need your input" holds only what is contested or has a question, grouped by why. */
 export default function InboxView({ issues }: { issues: Issue[] }) {
   const calls = useCalls();
-  const [tab, setTab] = useState<InboxTab>("call");
+  const load = useDemoLoad();
+  const [tab, setTab] = useState<InboxTab>("input");
 
+  const everything = load ? [...issues, ...BULK] : issues;
+  const withVerdict = everything.filter((i) => i.status === "in_progress" && verdictOf(i));
+  const contested = withVerdict.filter((i) => verdictOf(i)!.needsPerson);
+  const handled = withVerdict.filter((i) => !verdictOf(i)!.needsPerson && !calls[i.id]);
   // Decided fixes stay on screen (with Undo) after the undecided ones; only undecided ones count.
-  const withVerdict = issues.filter((i) => i.status === "in_progress" && verdictOf(i));
-  const ready = withVerdict.filter((i) => !calls[i.id]);
+  const waiting = contested.filter((i) => !calls[i.id]);
+  const decided = withVerdict.filter((i) => calls[i.id]);
   const lists: Record<InboxTab, Issue[]> = {
-    call: [...ready, ...withVerdict.filter((i) => calls[i.id])],
-    input: issues.filter((i) => i.inbox === "input"),
-    design: issues.filter((i) => i.inbox === "design"),
-    idea: issues.filter((i) => i.inbox === "idea"),
+    input: everything.filter((i) => i.inbox === "input"),
+    design: everything.filter((i) => i.inbox === "design"),
+    idea: everything.filter((i) => i.inbox === "idea"),
   };
   const current = TABS.find((t) => t.tab === tab)!;
+  const shown = tab === "input" ? contested.length + decided.length + lists.input.length + handled.length : lists[tab].length;
+
+  const questionCard = (issue: Issue) => (
+    <Link key={issue.id} href={`/issues/${issue.id}`} className="block rounded-xl border border-zk-border bg-zk-surface p-4 hover:border-zk-muted">
+      <p className="font-semibold"><span className="text-zk-muted">#{issue.id}</span> {issue.title}</p>
+      {issue.question && <p className="mt-1.5 text-sm text-zk-text2">{issue.question}</p>}
+    </Link>
+  );
+  const fixCard = (issue: Issue) => <CallCard key={issue.id} issue={issue} verdict={verdictOf(issue)!} />;
 
   return (
     <div className="space-y-5">
@@ -40,13 +104,10 @@ export default function InboxView({ issues }: { issues: Issue[] }) {
           <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-zk-tint text-zk-accent"><Inbox className="size-5" /></span>
           <div className="text-sm leading-relaxed text-zk-text2">
             <p className="font-semibold text-zk-text">How the Inbox works</p>
-            <p>
-              Agents work through issues on their own and stop here when they need a person: to answer a question, give feedback on a design, or weigh in on a new idea.{" "}
-              <span className="text-zk-text">
-                Once {QUORUM} agents have reviewed a fix, Ziki stops asking for more reviews and brings it here for you to merge or send back.
-              </span>{" "}
-              <NewTag />
-            </p>
+            <p>Agents merge the fixes they agree on. You only see what is contested or needs an answer.</p>
+            <button type="button" onClick={() => setDemoLoad(!load)} className="mt-1 cursor-pointer text-xs font-semibold text-zk-accent">
+              {load ? "Back to the small demo" : "Load 150 demo issues"}
+            </button>
           </div>
         </div>
         <div className="border-t border-zk-border p-4 md:border-t-0 md:border-l">
@@ -80,26 +141,20 @@ export default function InboxView({ issues }: { issues: Issue[] }) {
             className={`flex shrink-0 items-center gap-2 border-b-2 px-3 pb-2.5 text-sm font-semibold ${tab === t.tab ? "border-zk-accent text-zk-text" : "border-transparent text-zk-text2 hover:text-zk-text"}`}
           >
             {t.label}
-            <span className="rounded-md bg-zk-chip px-1.5 font-mono text-xs text-zk-text2">{t.tab === "call" ? ready.length : lists[t.tab].length}</span>
-            {t.isNew && <NewTag />}
+            <span className="rounded-md bg-zk-chip px-1.5 font-mono text-xs text-zk-text2">{t.tab === "input" ? waiting.length + lists.input.length : lists[t.tab].length}</span>
           </button>
         ))}
       </div>
 
-      <div role="tabpanel" className="space-y-3">
-        {tab === "call" && lists.call.map((issue) => <CallCard key={issue.id} issue={issue} verdict={verdictOf(issue)!} />)}
-        {tab !== "call" &&
-          lists[tab].map((issue) => (
-            <Link key={issue.id} href={`/issues/${issue.id}`} className="block rounded-xl border border-zk-border bg-zk-surface p-4 hover:border-zk-muted">
-              <p className="font-semibold"><span className="text-zk-muted">#{issue.id}</span> {issue.title}</p>
-              {issue.question && <p className="mt-1.5 text-sm text-zk-text2">{issue.question}</p>}
-            </Link>
-          ))}
-        {lists[tab].length === 0 && (
+      <div role="tabpanel" className="space-y-5">
+        {tab === "input" && <Digest issues={handled} />}
+        {tab === "input" && <Group title="Agents disagree" count={waiting.length + decided.length}>{[...waiting, ...decided].map(fixCard)}</Group>}
+        {tab === "input" && <Group title="Agents have a question" count={lists.input.length}>{lists.input.map(questionCard)}</Group>}
+        {tab !== "input" && <div className="space-y-3">{lists[tab].map(questionCard)}</div>}
+        {shown === 0 && (
           <div className="rounded-xl border border-zk-border px-4 py-12 text-center">
             <p className="font-semibold">Nothing here right now.</p>
             <p className="mt-1 text-sm text-zk-text2">{current.empty}</p>
-            <button type="button" className="mt-3 text-sm font-semibold text-zk-accent">Clear filters</button>
           </div>
         )}
       </div>

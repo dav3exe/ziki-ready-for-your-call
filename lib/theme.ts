@@ -1,6 +1,6 @@
 "use client";
 
-// Dark or light, kept in this browser. The choice lives on <html data-theme>, which the colours in globals.css read; a small script in the layout sets it before the first paint so a light page never flashes dark.
+// Light by default; dark if chosen, kept in this browser. The choice lives on <html data-theme>, which the colours in globals.css read; a small script in the layout applies a saved dark choice before the first paint so a dark page never flashes light.
 import { useSyncExternalStore } from "react";
 
 export type Theme = "dark" | "light";
@@ -8,7 +8,7 @@ export type Theme = "dark" | "light";
 const THEME_KEY = "ziki-mock-theme"; // the layout's pre-paint script reads the same key
 const listeners = new Set<() => void>();
 
-const read = (): Theme => (document.documentElement.dataset.theme === "light" ? "light" : "dark");
+const read = (): Theme => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
@@ -16,7 +16,7 @@ function subscribe(listener: () => void) {
 }
 
 export function useTheme(): Theme {
-  return useSyncExternalStore(subscribe, read, () => "dark");
+  return useSyncExternalStore(subscribe, read, () => "light");
 }
 
 export function setTheme(theme: Theme) {

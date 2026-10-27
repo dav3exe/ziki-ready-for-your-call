@@ -10,15 +10,15 @@ import ReviewPill from "./review-pill";
 
 const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max).replace(/\s+\S*$/, "")}…` : text);
 
-/** What the agents would tell a person, in one or two sentences. */
+/** What the agents would tell a person, in one short line. */
 function message(issue: Issue, verdict: Verdict): string {
   const total = verdict.merge + verdict.notReady;
   const who = verdict.dissent[0];
   if (verdict.recommend === "merge") {
-    if (!who) return `All ${verdict.merge} agents say ship it, but ${issue.priority === "High" ? "it's high priority" : "nothing shows it working"}, so it needs a person.`;
-    return `${who.agent} isn't sure${who.reason ? `: “${clip(who.reason.replace(/\.$/, ""), 140)}”` : " and gave no reason"}. The other ${verdict.merge} say ship it.`;
+    if (!who) return `All ${total} say merge. ${issue.priority === "High" ? "High priority." : "No screenshot."}`;
+    return `${verdict.merge} of ${total} say merge. ${who.agent} ${who.reason ? `says: “${clip(who.reason.replace(/\.$/, ""), 90)}”` : "hasn't said why."}`;
   }
-  return `${verdict.merge} of ${total} agents say it's ready; ${verdict.notReady} found problems. Agents recommend sending it back with their notes.`;
+  return `Only ${verdict.merge} of ${total} say merge. Agents recommend sending it back.`;
 }
 
 /** A contested fix in the Inbox: its title and one line on what it is, what the agents think, the recommended action, and the review chip. */

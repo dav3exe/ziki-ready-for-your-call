@@ -333,7 +333,7 @@ export default function ClassicIssue({ issue }: { issue: Issue }) {
       <div className="flex flex-wrap items-start gap-5">
         <div className="flex min-w-0 flex-[999_1_600px] flex-col gap-5">
           <DescriptionCard issue={issue} />
-          <DecisionsCard decisions={issue.decisions} />
+          <DecisionsCard decisions={issue.liveDecisions ?? issue.decisions} />
           <GoalBudgets />
           <ConversationCard comments={issue.conversation} />
         </div>

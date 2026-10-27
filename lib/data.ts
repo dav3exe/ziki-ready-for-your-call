@@ -38,8 +38,27 @@ export const desc = (what: string, expected: string, actual: string, why: string
   { heading: "Why it matters", body: why },
 ];
 
+/** #190 as the proposal's example of a fix that is not merge-ready: three of its first five reviews say not ready, each with a reason. These votes are made up; "Ziki today" still shows the real ones. */
+const NOT_READY_REASONS = [
+  "The badge clears in the thread view but not in the channel list.",
+  "No test covers the count after a thread is reopened.",
+  "The count is read once on open, so it comes back after a refresh.",
+];
+function remixNotReady(issue: Issue): Issue {
+  const plan: DecisionKind[] = ["good_to_merge", "not_ready", "not_ready", "good_to_merge", "not_ready"];
+  let seen = 0;
+  let reasons = 0;
+  const decisions = issue.decisions.map((d) => {
+    if (d.kind !== "good_to_merge" && d.kind !== "not_ready") return d;
+    const kind = seen < plan.length ? plan[seen] : d.kind;
+    seen += 1;
+    return kind === "not_ready" ? { ...d, kind, reason: NOT_READY_REASONS[reasons++ % NOT_READY_REASONS.length] } : { ...d, kind, reason: undefined };
+  });
+  return { ...issue, decisions, liveDecisions: issue.decisions };
+}
+
 export const ISSUES: Issue[] = [
-  ...LIVE_ISSUES,
+  ...LIVE_ISSUES.map((i) => (i.id === 190 ? remixNotReady(i) : i)),
   {
     id: 412,
     title: "Let teams pin a message to the top of a channel",

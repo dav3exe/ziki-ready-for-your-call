@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Bot, ChevronDown } from "lucide-react";
 import { makeCall, useCalls } from "@/lib/calls";
-import { STAGES, stageOf } from "@/lib/stage";
+import { NOT_READY_STAGE, STAGES, stageOf } from "@/lib/stage";
 import type { Issue } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict";
 import CallActions from "./call-actions";
@@ -13,7 +13,9 @@ import WaitChip from "./wait-chip";
 export default function ReviewPill({ issue, verdict, actions = true }: { issue: Issue; verdict: Verdict | null; actions?: boolean }) {
   const [open, setOpen] = useState(false);
   const decided = useCalls()[issue.id];
-  const stage = STAGES[stageOf(issue, verdict)];
+  const stageIndex = stageOf(issue, verdict);
+  const stage = STAGES[stageIndex];
+  const stageTone = stageIndex === NOT_READY_STAGE ? "bg-zk-bad-bg text-zk-bad-fg" : "bg-zk-chip text-zk-text2";
 
   // Once a person has decided, what they decided shows in place of the pill, with Undo.
   if (verdict && decided) return <CallActions issue={issue} verdict={verdict} />;
@@ -51,7 +53,7 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
             )}
           </span>
         </button>
-        <span className="rounded-md bg-zk-chip px-2 py-0.5 text-xs font-semibold text-zk-text2">{stage}</span>
+        <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${stageTone}`}>{stage}</span>
         {verdict.needsPerson && issue.waitingFor && <WaitChip time={issue.waitingFor} />}
         {!verdict.needsPerson && (
           <>
@@ -72,7 +74,7 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
             {verdict.dissent.map((d) => (
               <li key={d.agent + d.at}>
                 <b className="text-zk-text">{d.agent}</b> {d.kind === "not_ready" ? "says not ready" : "says merge"}
-                {d.reason ? <>: “{d.reason}”</> : <span className="text-zk-muted"> (no reason given, so Ziki now asks for one)</span>}
+                {d.reason ? <>: “{d.reason}”</> : <span className="text-zk-muted"> (no reason yet, Ziki asked for one)</span>}
               </li>
             ))}
             {verdict.dissent.length === 0 && <li className="text-zk-muted">Every reviewing agent agrees.</li>}

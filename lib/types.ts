@@ -54,6 +54,8 @@ export type Issue = {
   description: { heading: string; body: string }[];
   pr?: string;
   decisions: Decision[];
+  /** When the proposal's demo changes the votes, what ziki.dev really shows. "Ziki today" uses these. */
+  liveDecisions?: Decision[];
   conversation: Comment[];
   activity?: Activity[];
   /** Existing Inbox tabs (questions, design feedback, ideas). */

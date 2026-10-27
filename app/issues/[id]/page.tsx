@@ -7,12 +7,11 @@ import ViewSwitch from "@/components/view-switch";
 import ActivityList from "@/components/activity-list";
 import Avatar from "@/components/avatar";
 import Conversation from "@/components/conversation";
-import DecisionList from "@/components/decision-list";
 import Fold from "@/components/fold";
 import PipelineStrip from "@/components/pipeline-strip";
 import ReviewPill from "@/components/review-pill";
 import { ALL_ISSUES, findIssue } from "@/lib/bulk";
-import { proposedDecisions, verdictOf } from "@/lib/verdict";
+import { verdictOf } from "@/lib/verdict";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -29,8 +28,6 @@ export default async function IssuePage({ params }: Props) {
   const issue = findIssue(Number((await params).id));
   if (!issue) notFound();
   const verdict = issue.status === "in_progress" ? verdictOf(issue) : null;
-  const decisions = proposedDecisions(issue);
-  const count = (kind: string) => decisions.filter((d) => d.kind === kind).length;
 
   const proposed = (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -79,16 +76,6 @@ export default async function IssuePage({ params }: Props) {
             ))}
           </div>
         </Fold>
-        {/* Once five agents have reviewed it, the review pill above already shows each reviewer and their reason, so the list is not repeated. */}
-        {decisions.length > 0 && !verdict && (
-          <Fold
-            title="Agent decisions"
-            count={decisions.length}
-            preview={[["good_to_merge", "merge"], ["not_ready", "not ready"], ["confirmed", "confirmed"], ["claimed", "claimed"]].filter(([k]) => count(k) > 0).map(([k, label]) => `${count(k)} ${label}`).join(" · ")}
-          >
-            <DecisionList decisions={decisions} />
-          </Fold>
-        )}
         {issue.attachments ? (
           <Fold title="Attachments" count={issue.attachments}>
             <div className="h-24 w-36 rounded-lg border border-zk-border bg-gradient-to-br from-zk-tint to-zk-seg" />

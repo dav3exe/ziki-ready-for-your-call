@@ -5,8 +5,9 @@ import { Bot, ChevronDown } from "lucide-react";
 import { makeCall, useCalls } from "@/lib/calls";
 import { NOT_READY_STAGE, STAGES, stageOf } from "@/lib/stage";
 import type { Issue } from "@/lib/types";
-import type { Verdict } from "@/lib/verdict";
+import { proposedDecisions, type Verdict } from "@/lib/verdict";
 import CallActions from "./call-actions";
+import DecisionList from "./decision-list";
 import ReviewRows from "./review-rows";
 import WaitChip from "./wait-chip";
 
@@ -18,14 +19,40 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
   const stage = STAGES[stageIndex];
   const stageTone = stageIndex === NOT_READY_STAGE ? "bg-zk-bad-bg text-zk-bad-fg" : "bg-zk-chip text-zk-text2";
 
-  // Once a person has decided, what they decided shows in place of the pill, with Undo.
-  if (verdict && decided) return <CallActions issue={issue} verdict={verdict} />;
-  if (!verdict) return <span className="inline-block rounded-md bg-zk-chip px-2 py-0.5 text-xs font-semibold text-zk-text2">{stage}</span>;
+  // Before five agents have reviewed it there is no verdict, so the pill is a small chip for the decisions so far (never more than five).
+  if (!verdict) {
+    const so_far = proposedDecisions(issue);
+    return (
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {so_far.length > 0 && (
+            <button
+              type="button"
+              aria-expanded={open}
+              onClick={() => setOpen(!open)}
+              className="flex cursor-pointer items-center gap-2 rounded-full border border-zk-border bg-zk-surface py-1 pr-2.5 pl-2 text-xs font-semibold text-zk-text2 transition-[border-color,transform] hover:border-zk-muted active:scale-[0.98]"
+            >
+              <Bot className="size-4 text-zk-accent" /> {so_far.length} agent {so_far.length === 1 ? "decision" : "decisions"}
+              <ChevronDown className={`size-3.5 text-zk-muted transition-transform ${open ? "rotate-180" : ""}`} />
+            </button>
+          )}
+          <span className="rounded-md bg-zk-chip px-2 py-0.5 text-xs font-semibold text-zk-text2">{stage}</span>
+        </div>
+        {open && so_far.length > 0 && (
+          <div className="rounded-xl border border-zk-border bg-zk-surface p-4">
+            <DecisionList decisions={so_far} />
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const total = verdict.merge + verdict.notReady;
   const mergePct = Math.round((verdict.merge / total) * 100);
   return (
     <div className="space-y-3">
+      {/* Once a person has decided, what they decided shows here, with Undo. The pill stays. */}
+      {decided && <CallActions issue={issue} verdict={verdict} />}
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -54,10 +81,10 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
             )}
           </span>
         </button>
-        {actions && verdict.needsPerson && <CallActions issue={issue} verdict={verdict} />}
+        {!decided && actions && verdict.needsPerson && <CallActions issue={issue} verdict={verdict} />}
         <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${stageTone}`}>{stage}</span>
-        {verdict.needsPerson && issue.waitingFor && <WaitChip time={issue.waitingFor} />}
-        {!verdict.needsPerson && (
+        {!decided && verdict.needsPerson && issue.waitingFor && <WaitChip time={issue.waitingFor} />}
+        {!decided && !verdict.needsPerson && (
           <>
             <span className="text-xs text-zk-text2">Handed to the Merger agent.</span>
             <button

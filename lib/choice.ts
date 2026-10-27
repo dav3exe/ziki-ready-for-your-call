@@ -4,7 +4,7 @@ export type ChoiceView = {
   lead: Choice;
   other: Choice;
   total: number;
-  /** False when every agent backs the same option: the agents settle it themselves. */
+  /** False only for a question where every agent backs the same option. New features and designs always need a human vote. */
   needsPerson: boolean;
 };
 
@@ -13,5 +13,5 @@ export function choiceOf(issue: Issue): ChoiceView | null {
   if (!issue.choices) return null;
   const [a, b] = issue.choices;
   const [lead, other] = b.votes > a.votes ? [b, a] : [a, b];
-  return { lead, other, total: a.votes + b.votes, needsPerson: other.votes > 0 };
+  return { lead, other, total: a.votes + b.votes, needsPerson: issue.inbox === "idea" || issue.inbox === "design" || other.votes > 0 };
 }

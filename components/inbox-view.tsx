@@ -6,7 +6,8 @@ import { useState } from "react";
 import { BULK } from "@/lib/bulk";
 import { makeCall, useCalls } from "@/lib/calls";
 import { choiceOf } from "@/lib/choice";
-import { MY_AGENT } from "@/lib/data";
+import { MERGERS, MY_AGENT } from "@/lib/data";
+import { setApprovalsNeeded, useApprovalsNeeded } from "@/lib/approvals";
 import { setDemoLoad, useDemoLoad } from "@/lib/demo-load";
 import type { InboxTab, Issue } from "@/lib/types";
 import { verdictOf } from "@/lib/verdict";
@@ -82,6 +83,22 @@ function Digest({ issues }: { issues: Issue[] }) {
   );
 }
 
+/** The setting for how many human approvals a design needs before it goes live. */
+function ApprovalsSetting() {
+  const n = useApprovalsNeeded();
+  const step = "flex size-7 cursor-pointer items-center justify-center rounded-lg border border-zk-border text-zk-text hover:border-zk-muted";
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zk-border px-4 py-2.5 text-sm text-zk-text2">
+      <span>Designs need a human to approve before they go live. Approvals needed:</span>
+      <span className="flex items-center gap-2">
+        <button type="button" aria-label="Fewer approvals" onClick={() => setApprovalsNeeded(n - 1)} className={step}>−</button>
+        <b className="w-4 text-center text-zk-text">{n}</b>
+        <button type="button" aria-label="More approvals" onClick={() => setApprovalsNeeded(n + 1)} className={step}>+</button>
+      </span>
+    </div>
+  );
+}
+
 /** Ziki's Inbox. Agents handle the fixes they agree on; "Need your input" holds only what is contested or has a question, grouped by why. */
 export default function InboxView({ issues }: { issues: Issue[] }) {
   const calls = useCalls();
@@ -121,7 +138,7 @@ export default function InboxView({ issues }: { issues: Issue[] }) {
           <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-zk-tint text-zk-accent"><Inbox className="size-5" /></span>
           <div className="text-sm leading-relaxed text-zk-text2">
             <p className="font-semibold text-zk-text">How the Inbox works</p>
-            <p>Agents merge the fixes they agree on. You only see what is contested or needs an answer.</p>
+            <p>Fixes the agents agree on go to the Merger agent. You see what is contested, and new features and designs always need a human vote.</p>
             <button type="button" onClick={() => setDemoLoad(!load)} className="mt-1 cursor-pointer text-xs font-semibold text-zk-accent">
               {load ? "Back to the small demo" : "Load 150 demo issues"}
             </button>
@@ -144,6 +161,18 @@ export default function InboxView({ issues }: { issues: Issue[] }) {
               <p className="text-xs text-zk-muted">Last 30 days: {MY_AGENT.confirmed} confirmed</p>
             </div>
           </div>
+          <p className="mt-4 mb-2 text-xs font-bold tracking-wider text-zk-text2 uppercase">Merger agents</p>
+          <ul className="space-y-2">
+            {MERGERS.map((m) => (
+              <li key={m.name} className="flex items-start gap-2 text-sm">
+                <span className="mt-1.5 size-2 shrink-0 rounded-full bg-zk-ok-fg" aria-label={m.state} />
+                <span className="min-w-0">
+                  <b className="text-zk-text">{m.name}</b> <span className="text-xs text-zk-muted">{m.role}</span>
+                  <span className="block text-xs text-zk-text2">{m.state} · {m.note}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
@@ -164,9 +193,11 @@ export default function InboxView({ issues }: { issues: Issue[] }) {
       </div>
 
       <div role="tabpanel" className="space-y-5">
+        {tab === "design" && <ApprovalsSetting />}
+        {tab === "idea" && <p className="text-xs text-zk-muted">New features need a human vote, even when every agent agrees.</p>}
         <Digest issues={digestItems} />
         {tab === "input" && <Group title="Agents disagree" count={waiting.length + decided.length}>{[...waiting, ...decided].map(fixCard)}</Group>}
-        <Group title={tab === "input" ? "Agents have a question" : "Agents disagree"} count={listIn(tab).length}>{listIn(tab).map(questionCard)}</Group>
+        <Group title={tab === "input" ? "Agents have a question" : "Needs a human vote"} count={listIn(tab).length}>{listIn(tab).map(questionCard)}</Group>
         {shown === 0 && (
           <div className="rounded-xl border border-zk-border px-4 py-12 text-center">
             <p className="font-semibold">Nothing here right now.</p>

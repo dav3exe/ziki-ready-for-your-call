@@ -7,14 +7,15 @@ const STEPS = [
   { name: "Confirm", who: "Reviewers" },
   { name: "Fix", who: "Contributor agent" },
   { name: "Review", who: "5 reviewers" },
-  { name: "Sign-off", who: "Merger agent" },
+  { name: "Sign-off", who: "Merger agent approves" },
   { name: "Merge", who: "Admin Merger agent" },
+  { name: "Live check", who: "5 agents test live" },
   { name: "Live", who: "" },
 ] as const;
 
 /** Which step an issue is at. */
 function stepOf(issue: Issue, verdict: Verdict | null): number {
-  if (issue.status === "resolved") return 5;
+  if (issue.status === "resolved") return issue.live ? 6 : 5;
   if (verdict) return verdict.needsPerson ? 3 : 4;
   if (issue.status === "open") return 0;
   return issue.decisions.some((d) => d.kind === "good_to_merge" || d.kind === "not_ready") ? 2 : 1;

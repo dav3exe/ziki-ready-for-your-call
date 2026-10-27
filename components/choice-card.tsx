@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Bot, Check, Undo2 } from "lucide-react";
+import { useApprovalsNeeded } from "@/lib/approvals";
 import { makeCall, undoCall, useCalls } from "@/lib/calls";
 import { choiceOf } from "@/lib/choice";
 import { summaryOf } from "@/lib/summary";
@@ -14,6 +15,7 @@ const BUTTON = "flex cursor-pointer items-center gap-1.5 rounded-[10px] px-3.5 p
 export default function ChoiceCard({ issue }: { issue: Issue }) {
   const call = useCalls()[issue.id];
   const [overrule, setOverrule] = useState(false);
+  const needed = useApprovalsNeeded();
   const view = choiceOf(issue);
   if (!view) return null;
   const { lead, other, total } = view;
@@ -31,7 +33,8 @@ export default function ChoiceCard({ issue }: { issue: Issue }) {
         <div role="status" className="flex flex-wrap items-center gap-3 rounded-lg border border-zk-ok-fg/30 bg-zk-ok-bg px-3 py-2.5 text-sm text-zk-ok-fg">
           <Check className="size-4 shrink-0" />
           <span className="min-w-0 flex-1">
-            <b>Chosen: “{call.note}”.</b> The agents were told.
+            <b>Chosen: “{call.note}”.</b>{" "}
+            {issue.inbox === "design" ? `1 of ${needed} human approvals${needed > 1 ? `, ${needed - 1} more needed before it goes live.` : ". It can go live."}` : "The agents were told."}
           </span>
           <button type="button" onClick={() => undoCall(issue.id)} className="flex cursor-pointer items-center gap-1 text-xs font-semibold text-zk-text2 hover:text-zk-text">
             <Undo2 className="size-3.5" /> Undo

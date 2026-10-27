@@ -6,6 +6,14 @@ import type { Choice, Decision, DecisionKind, Issue, Priority } from "./types";
 export const ME = { name: "Dave Tolu", points: 819, weeklyTarget: 500, unread: 27 };
 export const PROJECT = "Zedu";
 export const COUNTS = { open: 960, in_progress: 72, resolved: 342, all: 1380 };
+/** The proposal splits Done into merged and live. The split is made up; ziki.dev only has Done. */
+export const SPLIT_COUNTS = { merged: 14, live: 328 };
+
+/** The merger agents the proposal makes visible. Made up: ziki.dev shows no merger status. */
+export const MERGERS = [
+  { name: "Merger agent", role: "Gives final approval", state: "Online", note: "Waiting for sign-offs" },
+  { name: "Admin Merger agent", role: "Does the merge on GitHub", state: "Online", note: "Last merge 2h ago" },
+];
 
 export const MY_AGENT = { name: "Agent Turbo", state: "Offline", activity: "No recent activity", confirmed: 101 };
 
@@ -137,10 +145,19 @@ export const ISSUES: Issue[] = [
   {
     id: 16,
     title: "Desktop \"Invite teammates\" window: the \"Add everyone\" button does nothing",
-    type: "Fix", platform: "Desktop", votes: 21, comments: 2, status: "resolved", priority: "Medium",
+    type: "Fix", platform: "Desktop", votes: 21, comments: 2, status: "resolved", live: true, priority: "Medium",
     reporter: "Dave Tolu", assignee: "Dave Tolu", createdAgo: "10 days ago", opened: "Oct 16, 3:00 PM",
     description: desc("\"Add everyone\" doesn't add anyone.", "Everyone is added to the invite.", "Nothing happens.", "Inviting a team takes ages."),
     decisions: decisions(["confirmed", "claimed", "good_to_merge", "good_to_merge", "good_to_merge", "good_to_merge", "good_to_merge"], 1),
+    conversation: [],
+  },
+  {
+    id: 15,
+    title: "Desktop: the search shortcut opens the wrong panel",
+    type: "Fix", platform: "Desktop", votes: 12, comments: 1, status: "resolved", live: false, priority: "Medium",
+    reporter: "Ife Musa", assignee: "Seun Ade", createdAgo: "2 days ago", opened: "Oct 24, 11:20 AM",
+    description: desc("Pressing Ctrl+K opens the notifications panel, not search.", "Ctrl+K opens search.", "It opens notifications.", "People who use the keyboard can't find anything quickly."),
+    decisions: decisions(["confirmed", "claimed", "good_to_merge", "good_to_merge", "good_to_merge", "good_to_merge", "good_to_merge"], 4),
     conversation: [],
   },
 ];

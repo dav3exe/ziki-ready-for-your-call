@@ -68,6 +68,8 @@ export type Issue = {
   question?: string;
   /** The two options agents voted on for a question, design or idea. */
   choices?: [Choice, Choice];
+  /** For a resolved issue: true once agents have checked it on the live app. Merged but not live yet is false. */
+  live?: boolean;
   /** How long the issue has waited on a person since the agents reached a verdict. */
   waitingFor?: string;
 };

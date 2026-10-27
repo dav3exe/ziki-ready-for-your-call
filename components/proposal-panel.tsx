@@ -12,7 +12,20 @@ const CHANGES = [
   { title: "Five reviews, then done", text: "Ziki stops asking agents after five. 4 or 5 merge votes recommend approval; 3 or fewer recommend send back.", href: "/issues/143" },
   { title: "Every review says why", text: "A short reason and a longer one are required. An agent that blocks without a reason is called out with a red tag on its picture.", href: "/issues/143" },
   { title: "Reviewers don’t merge", text: "Reviewers review, the Merger agent signs off, the Admin Merger agent merges. The strip on each issue shows who acts at each step.", href: "/issues/143" },
-  { title: "Same for designs and ideas", text: "Agents vote on the options. If they all agree they settle it; if not, you get the leading option and why, in one tap.", href: "/issues" },
+  { title: "Features and designs need a human", text: "Agents vote on the options and say why, but a person always decides. Designs have a setting for how many approvals they need.", href: "/issues" },
+  { title: "Ready for merge, Merged, Live", text: "A Ready for merge tab, and Done split in two: merged, then live once 5 agents have tested it.", href: "/issues?status=ready" },
+];
+
+// Mark's "Ziki Automated Coding" goals, and where each one stands in this mock-up.
+const GOALS: { done: boolean; text: string }[] = [
+  { done: true, text: "Merger agents are visible, with their status (Inbox, right panel)." },
+  { done: true, text: "A “Ready for merge” tab." },
+  { done: true, text: "Approval and the mechanical merge are two agents (the strip on each issue)." },
+  { done: true, text: "A live test by 5 agents after the merge, and Done split into Merged and Live." },
+  { done: true, text: "Agents argue their point: every review gives a reason." },
+  { done: true, text: "New features and designs always need a human vote; designs have an approvals-needed setting." },
+  { done: true, text: "Agents that test post screenshots; no screenshot, no automatic merge." },
+  { done: false, text: "A written merge-criteria document, rollback notes, and stopping people earning points from duplicates or their own tickets." },
 ];
 
 /** The proposal as a pill stuck to the side of the screen. Open it for the problem, what changes and how to try it. */
@@ -71,12 +84,23 @@ export default function ProposalPanel() {
                 ))}
               </ol>
             </section>
+            <section className="space-y-2">
+              <h3 className="text-xs font-bold tracking-wider text-zk-text uppercase">Mark’s goals</h3>
+              <ul className="space-y-1.5">
+                {GOALS.map((g) => (
+                  <li key={g.text} className="flex gap-2">
+                    <span aria-label={g.done ? "Built" : "Not built"} className={`mt-0.5 shrink-0 font-bold ${g.done ? "text-zk-ok-fg" : "text-zk-muted"}`}>{g.done ? "✓" : "○"}</span>
+                    <span>{g.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
             <section className="space-y-1.5">
               <h3 className="text-xs font-bold tracking-wider text-zk-text uppercase">Try it</h3>
               <p>Use the switch at the top to flip between Ziki today and the proposal. In the Inbox, “Load 150 demo issues” shows it at Mark’s 100 to 200 item size: about 100 collapse into one line.</p>
             </section>
             <footer className="space-y-2 border-t border-zk-divider pt-3 text-xs">
-              <p>The Inbox and In progress issues are copied from ziki.dev as of Oct 27. Reasons on “merge” votes, the design and idea votes and the 150 demo issues are made up; ziki.dev records almost no reasons. Your choices stay in this browser.</p>
+              <p>The Inbox and In progress issues are copied from ziki.dev as of Oct 27. Reasons on “merge” votes, the design and idea votes, the merger agents’ status, the Merged and Live split and the 150 demo issues are made up; ziki.dev records almost no reasons. Your choices stay in this browser.</p>
               <ResetDemo />
             </footer>
           </div>

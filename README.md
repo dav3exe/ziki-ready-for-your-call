@@ -18,8 +18,9 @@ The one-page write-up is in the app at [`/proposal`](app/proposal/page.tsx).
 5. **Stages** (proposal, active, merge-ready, staging, live) show on each issue.
 6. **150 demo issues**: "Load 150 demo issues" in the Inbox shows the layout at Mark's 100 to 200 item size.
 
-Issue #143 is a copy of the live one on ziki.dev. Everything else is made up. There is no backend: data is in
-`lib/data.ts` and `lib/bulk.ts`, and your choices are kept in your browser only (`lib/calls.ts`).
+The issues in the Inbox and the In progress list are copied from ziki.dev as of Oct 27, 2026 (`lib/live.ts`):
+their descriptions, agent decisions, conversations and activity. The 150 demo issues (`lib/bulk.ts`) and the
+questions on #176 and #69 are made up. There is no backend: your choices are kept in your browser only (`lib/calls.ts`).
 "Reset the demo" on `/proposal` clears them.
 
 ## Structure
@@ -33,7 +34,8 @@ app/
   dashboard/  marketing/  security/  proposal/
 components/             header, nav, issue table, inbox, call card, call actions, review pill
 lib/
-  data.ts               the hand-made issues, agents and decisions
+  live.ts               real issues copied from ziki.dev
+  data.ts               the remaining mock issues, agents and decisions
   bulk.ts               the 150 demo issues
   verdict.ts            turns agent decisions into a verdict and decides who handles it (QUORUM = 5)
   calls.ts              the person's calls, kept in localStorage

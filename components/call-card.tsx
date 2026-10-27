@@ -29,7 +29,7 @@ export default function CallCard({ issue, verdict }: { issue: Issue; verdict: Ve
           <span className="text-zk-muted">#{issue.id}</span> {issue.title}
         </Link>
         <p className="mt-1 text-xs text-zk-muted">
-          {issue.type} · {issue.platform} · by {issue.assignee}
+          {issue.type} · {issue.platform && `${issue.platform} · `}by {issue.assignee}
           {issue.pr && <> · PR {issue.pr}</>}
           {" · "}
           {shots > 0 ? `${shots} ${shots === 1 ? "screenshot" : "screenshots"}` : "No screenshots"}

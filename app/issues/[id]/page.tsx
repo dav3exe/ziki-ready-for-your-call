@@ -64,7 +64,7 @@ export default async function IssuePage({ params }: Props) {
       <ReviewPill issue={issue} verdict={verdict} />
 
       <div className="rounded-xl border border-zk-border bg-zk-surface px-4">
-        <Fold title="Description" preview={issue.description[0].body}>
+        <Fold title="Description" preview={(issue.description.find((p) => /summary|what|happens|description/i.test(p.heading)) ?? issue.description[0]).body}>
           <div className="space-y-2 text-sm leading-relaxed text-zk-text2">
             {issue.description.map((part) => (
               <div key={part.heading}>

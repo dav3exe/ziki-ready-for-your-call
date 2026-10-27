@@ -84,6 +84,7 @@ export default function Conversation({ comments }: { comments: Comment[] }) {
               <Avatar name={c.author} size={20} />
               <b className="text-zk-text">{c.author}</b>
               {c.agent && <span className="text-zk-muted">via {c.agent}</span>}
+              {c.kind && <span className="rounded-md bg-zk-chip px-1.5 py-0.5 font-semibold text-zk-text2">{c.kind}</span>}
               <span className="ml-auto text-zk-muted">{c.at}</span>
             </div>
             <Body text={c.body} />

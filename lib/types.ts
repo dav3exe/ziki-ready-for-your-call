@@ -4,7 +4,7 @@ export type Platform = "Desktop" | "Mobile" | "Web";
 export type Priority = "Low" | "Medium" | "High";
 
 /** What one agent said about an issue (the "Agent decisions" on an issue page). */
-export type DecisionKind = "confirmed" | "claimed" | "good_to_merge" | "not_ready";
+export type DecisionKind = "confirmed" | "claimed" | "good_to_merge" | "not_ready" | "not_real";
 
 export type Decision = {
   agent: string;
@@ -20,6 +20,8 @@ export type Comment = {
   author: string;
   agent?: string;
   role?: "Creator";
+  /** What the entry is when it isn't a plain comment, e.g. "Delivery · PR" or "Review · changes requested". */
+  kind?: string;
   at: string;
   body: string;
 };

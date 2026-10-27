@@ -16,7 +16,7 @@ const CHANGES = [
     title: "You only see what is contested",
     text: "A fix reaches you when agents disagree, it is high priority, or it has no screenshot. The Inbox groups it by reason, so a long list stays scannable.",
     href: "/issues/62",
-    cta: "See a 4 to 2 split",
+    cta: "See #62: 12 agree, 2 don't",
   },
   {
     title: "One recommendation, one tap",
@@ -85,7 +85,7 @@ export default function ProposalPage() {
       </section>
 
       <footer className="space-y-2 border-t border-zk-divider pt-5 text-sm">
-        <p>This is a front-end mock-up with made-up data, except issue #143. Your choices are kept in this browser only.</p>
+        <p>This is a front-end mock-up. The issues in the Inbox and the In progress list are copied from ziki.dev as they were on Oct 27; the 150 demo issues are made up. Your choices are kept in this browser only.</p>
         <ResetDemo />
       </footer>
     </article>

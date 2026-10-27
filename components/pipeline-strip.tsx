@@ -1,17 +1,18 @@
+import { BadgeCheck, ClipboardCheck, FlaskConical, GitMerge, Rocket, ShieldCheck, Wrench, type LucideIcon } from "lucide-react";
 import type { Issue } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict";
 
-// Who acts at each step in the proposal. These are Ziki's own roles: reviewers confirm and test, a Merger agent accepts a fix,
+// Who acts at each step in the proposal. These are Ziki's own roles: reviewers confirm and test, a Merger agent approves a fix,
 // an Admin Merger agent performs the merge. A person steps in only at the sign-off, and only when the agents are contested.
-const STEPS = [
-  { name: "Confirm", who: "Reviewers" },
-  { name: "Fix", who: "Contributor agent" },
-  { name: "Review", who: "5 reviewers" },
-  { name: "Sign-off", who: "Merger agent approves" },
-  { name: "Merge", who: "Admin Merger agent" },
-  { name: "Live check", who: "5 agents test live" },
-  { name: "Live", who: "" },
-] as const;
+const STEPS: { name: string; who: string; icon: LucideIcon }[] = [
+  { name: "Confirm", who: "Reviewers", icon: ShieldCheck },
+  { name: "Fix", who: "Contributor agent", icon: Wrench },
+  { name: "Review", who: "5 reviewers", icon: ClipboardCheck },
+  { name: "Sign-off", who: "Merger agent approves", icon: BadgeCheck },
+  { name: "Merge", who: "Admin Merger agent", icon: GitMerge },
+  { name: "Live check", who: "5 agents test live", icon: FlaskConical },
+  { name: "Live", who: "Shipped", icon: Rocket },
+];
 
 /** Which step an issue is at. */
 function stepOf(issue: Issue, verdict: Verdict | null): number {
@@ -21,27 +22,38 @@ function stepOf(issue: Issue, verdict: Verdict | null): number {
   return issue.decisions.some((d) => d.kind === "good_to_merge" || d.kind === "not_ready") ? 2 : 1;
 }
 
-/** The pipeline as a thin strip: who acts at each step, and where this issue is. */
+/** The pipeline as one slim row of icons joined by a line. Only the current step is spelled out; point at any icon for its name and who acts. */
 export default function PipelineStrip({ issue, verdict }: { issue: Issue; verdict: Verdict | null }) {
   const at = stepOf(issue, verdict);
   const waitingOnYou = verdict?.needsPerson === true && at === 3;
+  const current = STEPS[at];
   return (
-    <ol aria-label="Pipeline" className="flex gap-1 overflow-x-auto text-xs">
-      {STEPS.map((s, i) => {
-        const now = i === at;
-        const done = i < at;
-        const who = i === 3 && waitingOnYou ? "You, then the Merger agent" : s.who;
-        return (
-          <li
-            key={s.name}
-            aria-current={now ? "step" : undefined}
-            className={`min-w-0 shrink-0 rounded-lg border px-2.5 py-1.5 ${now ? "border-zk-blue bg-zk-tint text-zk-text" : done ? "border-zk-border bg-zk-chip/50 text-zk-text2" : "border-zk-border text-zk-muted"}`}
-          >
-            <span className="block font-semibold">{s.name}</span>
-            {who && <span className="block whitespace-nowrap">{who}</span>}
-          </li>
-        );
-      })}
-    </ol>
+    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
+      <ol aria-label="Pipeline" className="flex min-w-0 flex-1 items-center">
+        {STEPS.map((s, i) => {
+          const Icon = s.icon;
+          const now = i === at;
+          const done = i < at;
+          return (
+            <li key={s.name} className="flex items-center last:flex-none" style={{ flex: i === STEPS.length - 1 ? "none" : "1 1 0" }}>
+              <span
+                title={`${s.name} · ${s.who}`}
+                aria-current={now ? "step" : undefined}
+                aria-label={`${s.name}, ${s.who}${done ? ", done" : now ? ", now" : ""}`}
+                className={`flex size-7 shrink-0 items-center justify-center rounded-full ${
+                  now ? "bg-zk-blue text-white ring-4 ring-zk-blue/20" : done ? "bg-zk-ok-bg text-zk-ok-fg" : "border border-dashed border-zk-border text-zk-muted"
+                }`}
+              >
+                <Icon className="size-3.5" />
+              </span>
+              {i < STEPS.length - 1 && <span aria-hidden="true" className={`mx-1 h-0.5 flex-1 rounded-full ${done ? "bg-zk-ok-fg/40" : "bg-zk-divider"}`} />}
+            </li>
+          );
+        })}
+      </ol>
+      <p className="text-xs text-zk-text2 sm:w-64 sm:shrink-0 sm:text-right">
+        <b className="text-zk-text">{current.name}</b> · {waitingOnYou ? "You, then the Merger agent" : current.who}
+      </p>
+    </div>
   );
 }

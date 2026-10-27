@@ -15,8 +15,12 @@ export type Verdict = {
   unexplained: Decision[];
   /** What the agents would do: merge it, or send it back to the assignee. */
   recommend: "merge" | "send_back";
-  /** False when all five agree, the fix is shown working and it isn't high priority: they handle it themselves. */
+  /** Who deals with it next. A person only when a reviewer has explained a block, or something went wrong or is too sensitive for agents alone. */
+  route: "person" | "merger" | "reviewer" | "assignee";
+  /** True when route is "person". */
   needsPerson: boolean;
+  /** For the reviewer and assignee routes: who the agents are waiting on. */
+  waitingOn?: string;
 };
 
 const isReview = (d: Decision) => d.kind === "good_to_merge" || d.kind === "not_ready";
@@ -35,6 +39,12 @@ export function verdictOf(issue: Issue): Verdict | null {
   const notReady = reviews.length - merge;
   const share = merge / reviews.length;
   const dissent = reviews.filter((d) => d.kind === (share >= 0.5 ? "not_ready" : "good_to_merge"));
+  const blocks = reviews.filter((d) => d.kind === "not_ready");
+  const explained = blocks.filter((d) => d.reason);
+  const silent = blocks.find((d) => !d.reason);
+  // A "not ready" with no reason is not a block: the agent is asked to explain and a person isn't pulled in.
+  const route: Verdict["route"] = issue.escalation || explained.length > 0 ? "person" : silent ? "reviewer" : !(issue.screenshots ?? issue.attachments) ? "assignee" : "merger";
+  const escalated = issue.escalation ? (issue.escalation.recommend === "approve" ? "merge" : "send_back") : null;
   return {
     reviews,
     merge,
@@ -43,8 +53,10 @@ export function verdictOf(issue: Issue): Verdict | null {
     dissent,
     unexplained: dissent.filter((d) => d.kind === "not_ready" && !d.reason),
     // With five reviews: 4 or 5 merge votes recommend merge; 3 or fewer recommend sending it back.
-    recommend: share >= 0.75 ? "merge" : "send_back",
-    needsPerson: notReady > 0 || issue.priority === "High" || !(issue.screenshots ?? issue.attachments),
+    recommend: escalated ?? (share >= 0.75 ? "merge" : "send_back"),
+    route,
+    needsPerson: route === "person",
+    waitingOn: route === "reviewer" ? silent?.agent : route === "assignee" ? issue.assignee : undefined,
   };
 }
 

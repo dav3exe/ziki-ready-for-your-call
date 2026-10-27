@@ -31,6 +31,15 @@ export type Comment = {
 /** One line of an issue's read-only history: who did what, and when. */
 export type Activity = { at: string; who: string; text: string };
 
+/** Why a person is needed when it is not just a split vote: something went wrong, or the change is too sensitive for agents alone. */
+export type Escalation = {
+  kind: "security" | "live_failed" | "merge_blocked";
+  /** One line for the card. */
+  headline: string;
+  /** What the agents suggest the person does. */
+  recommend: "approve" | "rollback" | "send_back";
+};
+
 /** One option agents can back on a question, a design or an idea, with how many agents back it and why. */
 export type Choice = { label: string; votes: number; reason: string };
 
@@ -59,6 +68,8 @@ export type Issue = {
   description: { heading: string; body: string }[];
   pr?: string;
   decisions: Decision[];
+  /** Set when a person is needed for a reason other than the vote. */
+  escalation?: Escalation;
   /** When the proposal's demo changes the votes, what ziki.dev really shows. "Ziki today" uses these. */
   liveDecisions?: Decision[];
   conversation: Comment[];

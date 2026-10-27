@@ -51,7 +51,7 @@ function Digest({ issues }: { issues: Issue[] }) {
       <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left">
         <span className="text-sm">
           <b className="text-zk-text">{issues.length} handled by agents.</b>{" "}
-          <span className="text-zk-text2">All agreed.{issues.some((i) => !choiceOf(i)) ? " The Merger agent takes the fixes from here." : ""} Nothing needed from you.</span>
+          <span className="text-zk-text2">{issues.some((i) => !choiceOf(i)) ? "Merging, or waiting on a reviewer or the assignee." : "All agreed."} Nothing needed from you.</span>
         </span>
         <ChevronDown className={`size-4 shrink-0 text-zk-muted transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
@@ -196,7 +196,7 @@ export default function InboxView({ issues }: { issues: Issue[] }) {
         {tab === "design" && <ApprovalsSetting />}
         {tab === "idea" && <p className="text-xs text-zk-muted">New features need a human vote, even when every agent agrees.</p>}
         <Digest issues={digestItems} />
-        {tab === "input" && <Group title="Agents disagree" count={waiting.length + decided.length}>{[...waiting, ...decided].map(fixCard)}</Group>}
+        {tab === "input" && <Group title="Needs you" count={waiting.length + decided.length}>{[...waiting, ...decided].map(fixCard)}</Group>}
         <Group title={tab === "input" ? "Agents have a question" : "Needs a human vote"} count={listIn(tab).length}>{listIn(tab).map(questionCard)}</Group>
         {shown === 0 && (
           <div className="rounded-xl border border-zk-border px-4 py-12 text-center">

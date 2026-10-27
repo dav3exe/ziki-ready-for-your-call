@@ -13,7 +13,7 @@ const LABEL: Record<Exclude<ListView, "inbox">, string> = { open: "open", in_pro
 const VIEWS = ["open", "in_progress", "ready", "resolved", "merged", "live", "all"] as const;
 
 // A fix is ready for merge once five agents have reviewed it and the recommendation is to merge.
-const isReady = (i: (typeof ISSUES)[number]) => i.status === "in_progress" && verdictOf(i)?.recommend === "merge";
+const isReady = (i: (typeof ISSUES)[number]) => i.status === "in_progress" && (verdictOf(i)?.route === "person" || verdictOf(i)?.route === "merger") && verdictOf(i)?.recommend === "merge";
 
 export default async function IssuesPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const { status } = await searchParams;

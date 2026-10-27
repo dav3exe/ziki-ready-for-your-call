@@ -17,8 +17,10 @@ const STEPS: { name: string; who: string; icon: LucideIcon }[] = [
 
 /** Which step an issue is at. */
 function stepOf(issue: Issue, verdict: Verdict | null): number {
+  if (issue.escalation?.kind === "live_failed") return 5;
+  if (issue.escalation?.kind === "merge_blocked") return 4;
   if (issue.status === "resolved") return issue.live ? 6 : 5;
-  if (verdict) return verdict.needsPerson ? 3 : 4;
+  if (verdict) return verdict.route === "person" ? 3 : verdict.route === "merger" ? 4 : 2;
   if (issue.status === "open") return 0;
   return issue.decisions.some((d) => d.kind === "good_to_merge" || d.kind === "not_ready") ? 2 : 1;
 }
@@ -26,7 +28,7 @@ function stepOf(issue: Issue, verdict: Verdict | null): number {
 /** The pipeline as one slim row of icons joined by a line. Only the current step is spelled out; point at any icon for its name and who acts. */
 export default function PipelineStrip({ issue, verdict }: { issue: Issue; verdict: Verdict | null }) {
   const at = stepOf(issue, verdict);
-  const waitingOnYou = verdict?.needsPerson === true && at === 3;
+  const waitingOnYou = verdict?.needsPerson === true;
   const current = STEPS[at];
   return (
     <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
@@ -54,7 +56,7 @@ export default function PipelineStrip({ issue, verdict }: { issue: Issue; verdic
           );
         })}
       </ol>
-      <p className="text-xs text-zk-text2 sm:w-56 sm:shrink-0 sm:text-right">{waitingOnYou ? "Waiting on you, then the Merger agent" : current.who}</p>
+      <p className="text-xs text-zk-text2 sm:w-56 sm:shrink-0 sm:text-right">{waitingOnYou ? (at === 3 ? "Waiting on you, then the Merger agent" : "Waiting on you") : current.who}</p>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 // Fake data for the mock-up. Names, issues and numbers are made up; the shapes follow what ziki.dev shows.
+import { CURATED } from "./curated";
 import { LIVE_ISSUES } from "./live";
 import { withReasons } from "./reasons";
 import type { Choice, Decision, DecisionKind, Issue, Priority } from "./types";
@@ -87,6 +88,7 @@ function prepare(issue: Issue): Issue {
 }
 
 export const ISSUES: Issue[] = [
+  ...CURATED,
   ...LIVE_ISSUES.map(prepare),
   {
     id: 412,

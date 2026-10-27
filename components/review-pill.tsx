@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Bot, ChevronDown } from "lucide-react";
 import { makeCall, useCalls } from "@/lib/calls";
-import { NOT_READY_STAGE, STAGES, stageOf } from "@/lib/stage";
+import { BAD_STAGES, STAGES, stageOf } from "@/lib/stage";
 import type { Issue } from "@/lib/types";
 import { proposedDecisions, type Verdict } from "@/lib/verdict";
 import CallActions from "./call-actions";
@@ -17,7 +17,7 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
   const decided = useCalls()[issue.id];
   const stageIndex = stageOf(issue, verdict);
   const stage = STAGES[stageIndex];
-  const stageTone = stageIndex === NOT_READY_STAGE ? "bg-zk-bad-bg text-zk-bad-fg" : "bg-zk-chip text-zk-text2";
+  const stageTone = BAD_STAGES.includes(stageIndex) ? "bg-zk-bad-bg text-zk-bad-fg" : "bg-zk-chip text-zk-text2";
 
   // Before five agents have reviewed it there is no verdict, so the pill is a small chip for the decisions so far (never more than five).
   if (!verdict) {
@@ -84,7 +84,7 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
         {!decided && actions && verdict.needsPerson && <CallActions issue={issue} verdict={verdict} />}
         <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${stageTone}`}>{stage}</span>
         {!decided && verdict.needsPerson && issue.waitingFor && <WaitChip time={issue.waitingFor} />}
-        {!decided && !verdict.needsPerson && (
+        {!decided && verdict.route === "merger" && (
           <>
             <span className="text-xs text-zk-text2">Handed to the Merger agent.</span>
             <button
@@ -96,6 +96,8 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
             </button>
           </>
         )}
+        {!decided && verdict.route === "reviewer" && <span className="text-xs text-zk-text2">Waiting on {verdict.waitingOn} to explain its vote.</span>}
+        {!decided && verdict.route === "assignee" && <span className="text-xs text-zk-text2">Waiting on {verdict.waitingOn} for a screenshot.</span>}
       </div>
       {open && (
         <div className="space-y-3 rounded-xl border border-zk-border bg-zk-surface p-4">

@@ -4,12 +4,14 @@ import Link from "next/link";
 import { Bot, ChevronDown, Inbox, Settings } from "lucide-react";
 import { useState } from "react";
 import { BULK } from "@/lib/bulk";
-import { useCalls } from "@/lib/calls";
+import { makeCall, useCalls } from "@/lib/calls";
+import { choiceOf } from "@/lib/choice";
 import { MY_AGENT } from "@/lib/data";
 import { setDemoLoad, useDemoLoad } from "@/lib/demo-load";
 import type { InboxTab, Issue } from "@/lib/types";
 import { verdictOf } from "@/lib/verdict";
 import CallCard from "./call-card";
+import ChoiceCard from "./choice-card";
 import ReviewPill from "./review-pill";
 
 const TABS: { tab: InboxTab; label: string; empty: string }[] = [
@@ -39,7 +41,7 @@ function Group({ title, count, children }: { title: string; count: number; child
   );
 }
 
-/** Fixes the agents agreed on and merged without a person: one line, with the list a click away. */
+/** Things the agents agreed on and settled without a person: one line, with the list a click away. */
 function Digest({ issues }: { issues: Issue[] }) {
   const [open, setOpen] = useState(false);
   if (issues.length === 0) return null;
@@ -47,21 +49,33 @@ function Digest({ issues }: { issues: Issue[] }) {
     <section className="rounded-xl border border-zk-border bg-zk-surface">
       <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left">
         <span className="text-sm">
-          <b className="text-zk-text">{issues.length} {issues.length === 1 ? "fix" : "fixes"} handled by agents.</b>{" "}
-          <span className="text-zk-text2">All agreed and showed it working. Nothing needed from you.</span>
+          <b className="text-zk-text">{issues.length} handled by agents.</b>{" "}
+          <span className="text-zk-text2">All agreed. Nothing needed from you.</span>
         </span>
         <ChevronDown className={`size-4 shrink-0 text-zk-muted transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <ul className="max-h-80 divide-y divide-zk-divider overflow-y-auto border-t border-zk-divider">
-          {issues.map((i) => (
-            <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
-              <Link href={`/issues/${i.id}`} className="min-w-0 truncate text-zk-text hover:text-zk-accent">
-                <span className="text-zk-muted">#{i.id}</span> {i.title}
-              </Link>
-              <ReviewPill issue={i} verdict={verdictOf(i)} />
-            </li>
-          ))}
+          {issues.map((i) => {
+            const choice = choiceOf(i);
+            return (
+              <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
+                <Link href={`/issues/${i.id}`} className="min-w-0 truncate text-zk-text hover:text-zk-accent">
+                  <span className="text-zk-muted">#{i.id}</span> {i.title}
+                </Link>
+                {choice ? (
+                  <span className="flex items-center gap-2 text-xs text-zk-text2">
+                    Agents chose “{choice.lead.label}”
+                    <button type="button" onClick={() => makeCall(i.id, { kind: "sent_back", note: "Pulled back from the agents' choice." })} className="cursor-pointer font-semibold hover:text-zk-text">
+                      Pull back
+                    </button>
+                  </span>
+                ) : (
+                  <ReviewPill issue={i} verdict={verdictOf(i)} />
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
@@ -77,19 +91,22 @@ export default function InboxView({ issues }: { issues: Issue[] }) {
   const everything = load ? [...issues, ...BULK] : issues;
   const withVerdict = everything.filter((i) => i.status === "in_progress" && verdictOf(i));
   const contested = withVerdict.filter((i) => verdictOf(i)!.needsPerson);
-  const handled = withVerdict.filter((i) => !verdictOf(i)!.needsPerson && !calls[i.id]);
-  // Decided fixes stay on screen (with Undo) after the undecided ones; only undecided ones count.
+  const handledFixes = withVerdict.filter((i) => !verdictOf(i)!.needsPerson && !calls[i.id]);
+  // Decided items stay on screen (with Undo) after the undecided ones; only undecided ones count.
   const waiting = contested.filter((i) => !calls[i.id]);
   const decided = withVerdict.filter((i) => calls[i.id]);
-  const lists: Record<InboxTab, Issue[]> = {
-    input: everything.filter((i) => i.inbox === "input"),
-    design: everything.filter((i) => i.inbox === "design"),
-    idea: everything.filter((i) => i.inbox === "idea"),
-  };
-  const current = TABS.find((t) => t.tab === tab)!;
-  const shown = tab === "input" ? contested.length + decided.length + lists.input.length + handled.length : lists[tab].length;
 
-  const questionCard = (issue: Issue) => (
+  const inTab = (t: InboxTab) => everything.filter((i) => i.inbox === t);
+  // Questions, designs and ideas the agents don't all agree on need a person; the rest are handled by the agents.
+  const contestedIn = (t: InboxTab) => inTab(t).filter((i) => !choiceOf(i) || choiceOf(i)!.needsPerson);
+  const listIn = (t: InboxTab) => [...contestedIn(t).filter((i) => !calls[i.id]), ...contestedIn(t).filter((i) => calls[i.id])];
+  const handledIn = (t: InboxTab) => inTab(t).filter((i) => choiceOf(i) && !choiceOf(i)!.needsPerson && !calls[i.id]);
+  const count = (t: InboxTab) => (t === "input" ? waiting.length : 0) + contestedIn(t).filter((i) => !calls[i.id]).length;
+  const digestItems = tab === "input" ? [...handledFixes, ...handledIn("input")] : handledIn(tab);
+  const current = TABS.find((t) => t.tab === tab)!;
+  const shown = digestItems.length + listIn(tab).length + (tab === "input" ? contested.length + decided.length : 0);
+
+  const questionCard = (issue: Issue) => choiceOf(issue) ? <ChoiceCard key={issue.id} issue={issue} /> : (
     <Link key={issue.id} href={`/issues/${issue.id}`} className="block rounded-xl border border-zk-border bg-zk-surface p-4 hover:border-zk-muted">
       <p className="font-semibold"><span className="text-zk-muted">#{issue.id}</span> {issue.title}</p>
       {issue.question && <p className="mt-1.5 text-sm text-zk-text2">{issue.question}</p>}
@@ -141,16 +158,15 @@ export default function InboxView({ issues }: { issues: Issue[] }) {
             className={`flex shrink-0 items-center gap-2 border-b-2 px-3 pb-2.5 text-sm font-semibold ${tab === t.tab ? "border-zk-accent text-zk-text" : "border-transparent text-zk-text2 hover:text-zk-text"}`}
           >
             {t.label}
-            <span className="rounded-md bg-zk-chip px-1.5 font-mono text-xs text-zk-text2">{t.tab === "input" ? waiting.length + lists.input.length : lists[t.tab].length}</span>
+            <span className="rounded-md bg-zk-chip px-1.5 font-mono text-xs text-zk-text2">{count(t.tab)}</span>
           </button>
         ))}
       </div>
 
       <div role="tabpanel" className="space-y-5">
-        {tab === "input" && <Digest issues={handled} />}
+        <Digest issues={digestItems} />
         {tab === "input" && <Group title="Agents disagree" count={waiting.length + decided.length}>{[...waiting, ...decided].map(fixCard)}</Group>}
-        {tab === "input" && <Group title="Agents have a question" count={lists.input.length}>{lists.input.map(questionCard)}</Group>}
-        {tab !== "input" && <div className="space-y-3">{lists[tab].map(questionCard)}</div>}
+        <Group title={tab === "input" ? "Agents have a question" : "Agents disagree"} count={listIn(tab).length}>{listIn(tab).map(questionCard)}</Group>
         {shown === 0 && (
           <div className="rounded-xl border border-zk-border px-4 py-12 text-center">
             <p className="font-semibold">Nothing here right now.</p>

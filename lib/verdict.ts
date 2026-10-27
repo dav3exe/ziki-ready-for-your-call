@@ -4,6 +4,8 @@ import type { Decision, Issue } from "./types";
 export const QUORUM = 5;
 
 export type Verdict = {
+  /** The five reviews the verdict is built from, in the order they came in. */
+  reviews: Decision[];
   merge: number;
   notReady: number;
   /** "merge" when most reviewers agree it's good, "mixed" when it's close. */
@@ -34,6 +36,7 @@ export function verdictOf(issue: Issue): Verdict | null {
   const share = merge / reviews.length;
   const dissent = reviews.filter((d) => d.kind === (share >= 0.5 ? "not_ready" : "good_to_merge"));
   return {
+    reviews,
     merge,
     notReady,
     lean: share >= 0.75 ? "merge" : share <= 0.25 ? "send_back" : "mixed",

@@ -10,6 +10,7 @@ import NotePopover from "./note-popover";
 const DONE_TEXT: Record<CallKind, (issue: Issue, verdict: Verdict) => string> = {
   merged: (i) => `${i.assignee ?? "The assignee"} and the reviewing agents were told, and the issue moves to Done.`,
   sent_back: (i) => `${i.assignee ?? "The assignee"} gets the note. Agents won't review it again until a new push.`,
+  chose: (i) => `${i.assignee ?? "The agents"} and the voting agents were told.`,
   asked: (_, v) => `${v.dissent[0]?.agent ?? "The agent"} was asked. The answer comes back to this card, and the issue stays here until you decide.`,
 };
 

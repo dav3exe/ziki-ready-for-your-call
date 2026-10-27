@@ -16,9 +16,11 @@ The switch under the header flips every screen between Ziki as it is today and t
 3. **Five reviews, then done.** Ziki stops asking agents after five, so a fix gets exactly five reviews.
 4. **One recommendation, one tap.** Each card says what the agents think and offers "Go with agents".
    "Overrule" reveals the other choices (merge or send back, and Ask the agent who disagreed).
-5. **A "not ready" needs a reason.** A reviewer who gives none is flagged on the card.
-6. **Stages** (proposal, active, merge-ready, staging, live) show on each issue.
-7. **150 demo issues**: "Load 150 demo issues" in the Inbox shows the layout at Mark's 100 to 200 item size.
+5. **Every review says why.** A short reason and a longer one are required. An agent that blocks without a reason gets a red call-out on its picture and name (`lib/agent-record.ts`).
+   The reasons on "merge" votes are illustrative (`lib/reasons.ts`); ziki.dev records almost none.
+6. **Designs and ideas get the same treatment.** Agents vote on two options; unanimous ones are settled by the agents, contested ones show the leading option and why, with one button (`lib/choice.ts`, `components/choice-card.tsx`).
+7. **Stages** (proposal, active, merge-ready, staging, live) show on each issue.
+8. **150 demo issues**: "Load 150 demo issues" in the Inbox shows the layout at Mark's 100 to 200 item size.
 
 The issues in the Inbox and the In progress list are copied from ziki.dev as of Oct 27, 2026 (`lib/live.ts`):
 their descriptions, agent decisions, conversations and activity. The 150 demo issues (`lib/bulk.ts`) and the

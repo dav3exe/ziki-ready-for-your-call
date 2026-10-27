@@ -1,6 +1,7 @@
 // Fake data for the mock-up. Names, issues and numbers are made up; the shapes follow what ziki.dev shows.
 import { LIVE_ISSUES } from "./live";
-import type { Decision, DecisionKind, Issue, Priority } from "./types";
+import { withReasons } from "./reasons";
+import type { Choice, Decision, DecisionKind, Issue, Priority } from "./types";
 
 export const ME = { name: "Dave Tolu", points: 819, weeklyTarget: 500, unread: 27 };
 export const PROJECT = "Zedu";
@@ -57,16 +58,70 @@ function remixNotReady(issue: Issue): Issue {
   return { ...issue, decisions, liveDecisions: issue.decisions };
 }
 
+/** What the agents voted on the Inbox questions. The options and votes are made up; ziki.dev has no such votes. */
+const CHOICES: Record<number, [Choice, Choice]> = {
+  69: [
+    { label: "Display Settings", votes: 3, reason: "Says what the row controls without suggesting fonts or layout." },
+    { label: "Theme", votes: 2, reason: "Shorter, and it matches the Dark or Light subtitle." },
+  ],
+  176: [
+    { label: "Hide it on Windows", votes: 4, reason: "Apple sign-in isn't set up there, so the button can only fail." },
+    { label: "Keep it", votes: 1, reason: "The login screen stays the same on every platform." },
+  ],
+};
+
+function prepare(issue: Issue): Issue {
+  const remixed = issue.id === 190 ? remixNotReady(issue) : issue;
+  const out = withReasons(remixed);
+  if (remixed.liveDecisions) out.liveDecisions = withReasons({ ...remixed, decisions: remixed.liveDecisions }).decisions;
+  if (CHOICES[issue.id]) out.choices = CHOICES[issue.id];
+  return out;
+}
+
 export const ISSUES: Issue[] = [
-  ...LIVE_ISSUES.map((i) => (i.id === 190 ? remixNotReady(i) : i)),
+  ...LIVE_ISSUES.map(prepare),
   {
     id: 412,
     title: "Let teams pin a message to the top of a channel",
     type: "Feat", platform: "Web", votes: 9, comments: 0, status: "open", priority: "Low",
     reporter: "Kemi Bello", createdAgo: "2 hours ago", opened: "Oct 26, 8:00 AM",
     inbox: "idea",
-    question: "A new idea from an agent. Worth working on?",
-    description: desc("Teams want one message always visible in a channel.", "Pin a message to the top.", "No way to pin.", "Rules and links get buried."),
+    question: "Worth working on?",
+    choices: [
+      { label: "Build it", votes: 4, reason: "Rules and links get buried in busy channels, and pinning is a common request." },
+      { label: "Skip it", votes: 1, reason: "Channel descriptions already hold the key links." },
+    ],
+    description: desc("Teams want one message always visible in a channel.", "A message can be pinned to the top of a channel by an admin, and unpinned again.", "There is no way to pin. Rules and links scroll away.", "New members miss the rules, and people ask the same questions again."),
+    decisions: [],
+    conversation: [],
+  },
+  {
+    id: 413,
+    title: "Show who is typing in a thread",
+    type: "Feat", platform: "Web", votes: 6, comments: 0, status: "open", priority: "Low",
+    reporter: "Tobi Lawal", createdAgo: "5 hours ago", opened: "Oct 26, 5:10 AM",
+    inbox: "idea",
+    question: "Worth working on?",
+    choices: [
+      { label: "Build it", votes: 5, reason: "Channels already show typing, so threads feel broken without it." },
+      { label: "Skip it", votes: 0, reason: "" },
+    ],
+    description: desc("Threads don't show when someone is typing a reply.", "A small \"Ada is typing\" line appears under the last reply, as it does in channels.", "Nothing shows, so two people often reply at once.", "Duplicate replies and talking over each other."),
+    decisions: [],
+    conversation: [],
+  },
+  {
+    id: 414,
+    title: "Mobile tab bar: align the unread badge for multi-digit counts",
+    type: "Design", platform: "Mobile", votes: 5, comments: 0, status: "in_progress", priority: "Low",
+    reporter: "Ife Musa", createdAgo: "7 hours ago", opened: "Oct 26, 3:20 AM",
+    inbox: "design",
+    question: "Which alignment should ship?",
+    choices: [
+      { label: "Right-align", votes: 5, reason: "Keeps the badge clear of the icon for two and three digits." },
+      { label: "Centre it", votes: 0, reason: "" },
+    ],
+    description: desc("The unread badge on the bottom tab bar overlaps the icon once the count has two digits.", "The badge stays in the top-right corner of the icon for any count.", "It grows to the left and covers the icon.", "People can't tell which tab the badge belongs to."),
     decisions: [],
     conversation: [],
   },

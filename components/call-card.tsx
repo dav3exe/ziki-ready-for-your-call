@@ -16,7 +16,7 @@ function message(issue: Issue, verdict: Verdict): string {
   const who = verdict.dissent[0];
   if (verdict.recommend === "merge") {
     if (!who) return `All ${total} say merge. ${issue.priority === "High" ? "High priority." : "No screenshot."}`;
-    return `${verdict.merge} of ${total} say merge. ${who.agent} ${who.reason ? `says: “${clip(who.reason.replace(/\.$/, ""), 90)}”` : "hasn't said why."}`;
+    return `${verdict.merge} of ${total} say merge. ${who.agent} ${who.reason ? `says: “${clip(who.reason.replace(/\.$/, ""), 90)}”` : "blocked without a reason."}`;
   }
   return `Only ${verdict.merge} of ${total} say merge. Agents recommend sending it back.`;
 }

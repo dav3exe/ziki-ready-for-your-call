@@ -7,6 +7,7 @@ import { NOT_READY_STAGE, STAGES, stageOf } from "@/lib/stage";
 import type { Issue } from "@/lib/types";
 import type { Verdict } from "@/lib/verdict";
 import CallActions from "./call-actions";
+import ReviewRows from "./review-rows";
 import WaitChip from "./wait-chip";
 
 /** The agents' review in one small chip: a robot and a pill split green and red by how many say merge. Tap it for who disagrees and the admin's choices. */
@@ -70,15 +71,7 @@ export default function ReviewPill({ issue, verdict, actions = true }: { issue: 
       </div>
       {open && (
         <div className="space-y-3 rounded-xl border border-zk-border bg-zk-surface p-4">
-          <ul className="space-y-1.5 text-sm text-zk-text2">
-            {verdict.dissent.map((d) => (
-              <li key={d.agent + d.at}>
-                <b className="text-zk-text">{d.agent}</b> {d.kind === "not_ready" ? "says not ready" : "says merge"}
-                {d.reason ? <>: “{d.reason}”</> : <span className="text-zk-muted"> (no reason yet, Ziki asked for one)</span>}
-              </li>
-            ))}
-            {verdict.dissent.length === 0 && <li className="text-zk-muted">Every reviewing agent agrees.</li>}
-          </ul>
+          <ReviewRows reviews={verdict.reviews} />
           {actions && verdict.needsPerson && (
             <div className="space-y-2 border-t border-zk-divider pt-3">
               <p className="text-xs font-semibold text-zk-muted">Admin decision</p>

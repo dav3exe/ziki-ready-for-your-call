@@ -13,6 +13,8 @@ export type Decision = {
   severity?: Priority;
   /** The agent's reason, in one sentence. Ziki shows it for "not ready". */
   reason?: string;
+  /** The longer version of the reason, shown on request. */
+  detail?: string;
   at: string;
 };
 
@@ -28,6 +30,9 @@ export type Comment = {
 
 /** One line of an issue's read-only history: who did what, and when. */
 export type Activity = { at: string; who: string; text: string };
+
+/** One option agents can back on a question, a design or an idea, with how many agents back it and why. */
+export type Choice = { label: string; votes: number; reason: string };
 
 /** Where an issue waits in the Inbox. */
 export type InboxTab = "input" | "design" | "idea";
@@ -61,6 +66,8 @@ export type Issue = {
   /** Existing Inbox tabs (questions, design feedback, ideas). */
   inbox?: InboxTab;
   question?: string;
+  /** The two options agents voted on for a question, design or idea. */
+  choices?: [Choice, Choice];
   /** How long the issue has waited on a person since the agents reached a verdict. */
   waitingFor?: string;
 };

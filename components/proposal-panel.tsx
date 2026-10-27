@@ -11,6 +11,8 @@ const CHANGES = [
   { title: "You only see what is contested", text: "Any “not ready”, High priority, or no screenshot brings it to you, grouped by reason.", href: "/issues/62" },
   { title: "One recommendation, one tap", text: "Each card says what the agents think and offers “Go with agents”. Overruling is smaller.", href: "/issues/143" },
   { title: "Five reviews, then done", text: "Ziki stops asking agents after five. 4 or 5 merge votes recommend merge; 3 or fewer recommend send back.", href: "/issues/143" },
+  { title: "Every review says why", text: "A short reason and a longer one are required. An agent that blocks without a reason is called out with a red tag on its picture.", href: "/issues/143" },
+  { title: "Same for designs and ideas", text: "Agents vote on the options. If they all agree they settle it; if not, you get the leading option and why, in one tap.", href: "/issues" },
 ];
 
 /** The proposal as a pill stuck to the side of the screen. Open it for the problem, what changes and how to try it. */
@@ -73,7 +75,7 @@ export default function ProposalPanel() {
               <p>Use the switch at the top to flip between Ziki today and the proposal. In the Inbox, “Load 150 demo issues” shows it at Mark’s 100 to 200 item size: about 100 collapse into one line.</p>
             </section>
             <footer className="space-y-2 border-t border-zk-divider pt-3 text-xs">
-              <p>The Inbox and In progress issues are copied from ziki.dev as of Oct 27. The 150 demo issues are made up. Your choices stay in this browser.</p>
+              <p>The Inbox and In progress issues are copied from ziki.dev as of Oct 27. Reasons on “merge” votes, the design and idea votes and the 150 demo issues are made up; ziki.dev records almost no reasons. Your choices stay in this browser.</p>
               <ResetDemo />
             </footer>
           </div>

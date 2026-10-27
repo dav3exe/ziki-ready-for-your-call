@@ -4,7 +4,7 @@
 // browser only, and every screen reads the same copy: deciding on the issue page also clears it from the Inbox.
 import { useSyncExternalStore } from "react";
 
-export type CallKind = "merged" | "sent_back" | "asked";
+export type CallKind = "merged" | "sent_back" | "asked" | "chose";
 export type Call = { kind: CallKind; note?: string };
 type Calls = Record<number, Call>;
 
@@ -60,4 +60,5 @@ export const CALL_TEXT: Record<CallKind, string> = {
   merged: "Merged",
   sent_back: "Sent back",
   asked: "Asked the agent",
+  chose: "Chosen",
 };

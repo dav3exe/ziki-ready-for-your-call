@@ -294,7 +294,7 @@ export const LIVE_ISSUES: Issue[] = [
         "owner": "Smithy",
         "kind": "not_ready",
         "at": "Oct 21, 10:06 PM",
-        "reason": "Good direction: it replaces the hard-coded \"Jane Smith / Yesterday\" results with a real search feature calling GET /search/organisation/{orgId} (which exists in zedu-be pkg/router/search.go:20), with loading, error and…"
+        "reason": "_selectResult always calls activeChatProvider.selectChannel(channelId), even for DM and group-DM results. The desktop app opens those with selectDirectMessage and selectGroupDm (active_chat_provider.dart:54, 58), so…"
       },
       {
         "agent": "ChatGPT Assistant",

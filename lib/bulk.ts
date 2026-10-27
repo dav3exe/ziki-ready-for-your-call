@@ -1,7 +1,8 @@
 // 150 made-up issues, to show the Inbox at the size Mark asked about (100 to 200 items). Off by default;
 // "Load 150 demo issues" in the Inbox turns them on. Most are fixes the agents agree on, so they never reach a person.
 import { decisions, desc, ISSUES } from "./data";
-import type { DecisionKind, InboxTab, Issue, IssueType, Platform } from "./types";
+import { withReasons } from "./reasons";
+import type { Choice, DecisionKind, InboxTab, Issue, IssueType, Platform } from "./types";
 
 const PEOPLE = ["Ada Nwosu", "Seun Ade", "Kemi Bello", "Tobi Lawal", "Ife Musa", "Chi Uzor", "Mike Abu", "Ren Okafor", "Pita Adeyemi", "Divine Eze"];
 const TITLES = [
@@ -14,6 +15,8 @@ const TITLES = [
 const KINDS: IssueType[] = ["Fix", "Fix", "Fix", "Feat", "Design"];
 const PLATFORMS: Platform[] = ["Desktop", "Mobile", "Web"];
 const WAITS = ["2h", "5h", "9h", "14h", "1d 2h", "1d 20h", "2d 6h", "3d"];
+
+const LABELS: Record<InboxTab, [string, string]> = { input: ["Change it", "Keep it"], design: ["Option A", "Option B"], idea: ["Build it", "Skip it"] };
 
 const REASONS = [
   "Doesn't handle an empty state.",
@@ -52,17 +55,23 @@ function bulkIssue(n: number): Issue {
     return { ...base, status: "in_progress", screenshots: 1 + (n % 3), pr: `zedu-neo-hng/clean-zedu-desktop #${20 + n}`, decisions: decisions(spec, n) };
   }
   if (slot <= 8) {
-    const spec: (DecisionKind | [DecisionKind, string])[] = ["confirmed", "claimed", "good_to_merge", "good_to_merge", "good_to_merge", "good_to_merge", n % 3 === 0 ? "not_ready" : ["not_ready", REASONS[n % REASONS.length]]];
+    const spec: (DecisionKind | [DecisionKind, string])[] = ["confirmed", "claimed", "good_to_merge", "good_to_merge", "good_to_merge", "good_to_merge", ["not_ready", REASONS[n % REASONS.length]]];
     if (n % 2) spec.push(["not_ready", REASONS[(n + 1) % REASONS.length]]);
     return { ...base, status: "in_progress", screenshots: n % 4 === 0 ? 0 : 1, pr: `zedu-neo-hng/clean-zedu-desktop #${20 + n}`, waitingFor: WAITS[n % WAITS.length], decisions: decisions(spec, n) };
   }
   const inbox: InboxTab = n % 30 === 9 ? "idea" : n % 20 === 9 ? "design" : "input";
+  const [a, c] = LABELS[inbox];
+  const lead = n % 3 === 0 ? 5 : n % 3 === 1 ? 4 : 3;
+  const choices: [Choice, Choice] = [
+    { label: a, votes: lead, reason: "It fixes the problem with the least change." },
+    { label: c, votes: 5 - lead, reason: lead === 5 ? "" : "It keeps things as they are." },
+  ];
   const question =
     inbox === "idea" ? "A new idea from an agent. Worth working on?" : inbox === "design" ? "Two designs are ready. Which one should ship?" : "Which behaviour do you want here?";
-  return { ...base, status: inbox === "idea" ? "open" : "in_progress", inbox, question, decisions: decisions(["confirmed", "claimed"], n) };
+  return { ...base, status: inbox === "idea" ? "open" : "in_progress", inbox, question, choices, decisions: decisions(["confirmed", "claimed"], n) };
 }
 
-export const BULK: Issue[] = Array.from({ length: 150 }, (_, n) => bulkIssue(n));
+export const BULK: Issue[] = Array.from({ length: 150 }, (_, n) => withReasons(bulkIssue(n)));
 
 /** The hand-made issues plus the 150 demo ones, for pages that open any issue by id. */
 export const ALL_ISSUES: Issue[] = [...ISSUES, ...BULK];

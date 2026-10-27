@@ -1,5 +1,6 @@
 import { BadgeCheck, ClipboardCheck, FlaskConical, GitMerge, Rocket, ShieldCheck, Wrench, type LucideIcon } from "lucide-react";
 import type { Issue } from "@/lib/types";
+import Tip from "./tip";
 import type { Verdict } from "@/lib/verdict";
 
 // Who acts at each step in the proposal. These are Ziki's own roles: reviewers confirm and test, a Merger agent approves a fix,
@@ -29,31 +30,31 @@ export default function PipelineStrip({ issue, verdict }: { issue: Issue; verdic
   const current = STEPS[at];
   return (
     <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
-      <ol aria-label="Pipeline" className="flex min-w-0 flex-1 items-center">
+      <ol aria-label="Pipeline" className="flex min-w-0 flex-1">
         {STEPS.map((s, i) => {
           const Icon = s.icon;
           const now = i === at;
           const done = i < at;
           return (
-            <li key={s.name} className="flex items-center last:flex-none" style={{ flex: i === STEPS.length - 1 ? "none" : "1 1 0" }}>
+            <li key={s.name} className="relative flex min-w-0 flex-1 flex-col items-center gap-1">
+              {/* The line runs from this icon's centre to the next one's, behind the icons. */}
+              {i < STEPS.length - 1 && <span aria-hidden="true" className={`absolute top-3.5 left-1/2 h-0.5 w-full -translate-y-1/2 ${done ? "bg-zk-ok-fg/40" : "bg-zk-divider"}`} />}
+              <Tip text={`${s.name} · ${s.who}`} align={i === 0 ? "start" : i === STEPS.length - 1 ? "end" : "center"}>
               <span
-                title={`${s.name} · ${s.who}`}
                 aria-current={now ? "step" : undefined}
-                aria-label={`${s.name}, ${s.who}${done ? ", done" : now ? ", now" : ""}`}
-                className={`flex size-7 shrink-0 items-center justify-center rounded-full ${
-                  now ? "bg-zk-blue text-white ring-4 ring-zk-blue/20" : done ? "bg-zk-ok-bg text-zk-ok-fg" : "border border-dashed border-zk-border text-zk-muted"
+                className={`relative flex size-7 shrink-0 items-center justify-center rounded-full ${
+                  now ? "bg-zk-blue text-white ring-4 ring-zk-blue/20" : done ? "bg-zk-ok-bg text-zk-ok-fg" : "border border-dashed border-zk-border bg-zk-surface text-zk-muted"
                 }`}
               >
                 <Icon className="size-3.5" />
               </span>
-              {i < STEPS.length - 1 && <span aria-hidden="true" className={`mx-1 h-0.5 flex-1 rounded-full ${done ? "bg-zk-ok-fg/40" : "bg-zk-divider"}`} />}
+              </Tip>
+              <span className={`max-w-full truncate text-[10px] leading-none ${now ? "font-bold text-zk-text" : "text-zk-muted"}`}>{s.name}</span>
             </li>
           );
         })}
       </ol>
-      <p className="text-xs text-zk-text2 sm:w-64 sm:shrink-0 sm:text-right">
-        <b className="text-zk-text">{current.name}</b> · {waitingOnYou ? "You, then the Merger agent" : current.who}
-      </p>
+      <p className="text-xs text-zk-text2 sm:w-56 sm:shrink-0 sm:text-right">{waitingOnYou ? "Waiting on you, then the Merger agent" : current.who}</p>
     </div>
   );
 }

@@ -21,10 +21,10 @@ export type Verdict = {
 
 const isReview = (d: Decision) => d.kind === "good_to_merge" || d.kind === "not_ready";
 
-/** The decisions the proposal shows: every confirmation and claim, but only the first five reviews. */
+/** The agent decisions the proposal shows: never more than five. Once a fix is being reviewed, those are the first five reviews; before that, the first five confirmations. */
 export function proposedDecisions(issue: Issue): Decision[] {
-  let reviews = 0;
-  return issue.decisions.filter((d) => !isReview(d) || ++reviews <= QUORUM);
+  const reviews = issue.decisions.filter(isReview).slice(0, QUORUM);
+  return reviews.length > 0 ? reviews : issue.decisions.slice(0, QUORUM);
 }
 
 /** The agents' verdict on a fix, once five of them have reviewed it. null while reviews are still coming in. */

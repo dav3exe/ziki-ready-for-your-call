@@ -83,7 +83,7 @@ export default async function IssuePage({ params }: Props) {
           <Fold
             title="Agent decisions"
             count={decisions.length}
-            preview={`${count("good_to_merge")} merge · ${count("not_ready")} not ready · ${count("confirmed")} confirmed`}
+            preview={[["good_to_merge", "merge"], ["not_ready", "not ready"], ["confirmed", "confirmed"], ["claimed", "claimed"]].filter(([k]) => count(k) > 0).map(([k, label]) => `${count(k)} ${label}`).join(" · ")}
           >
             <DecisionList decisions={decisions} />
           </Fold>
